@@ -1,3 +1,36 @@
+# v2.1.0 驗證紀錄
+
+日期：2026-10-21。基於使用者上傳的 v2.0.0，使用合成資料驗證。
+
+已在 Linux / Python 3.12.14 的獨立環境安裝鎖定依賴並通過 **33 項 unittest**：
+原有 31 項（包含 2 項 Streamlit AppTest）及新增 2 項部署回歸測試。
+三個內建範例均完成整理 → 基準訓練 → 下載；匯出包在獨立程序中重新訓練／預測也通過。
+新增測試確認埠已占用時停止，以及訓練包包含自己的 version.py。
+
+另已通過：全部鎖定依賴版本檢查；從不同工作目錄啟動真實本地 launcher，
+HTTP `/_stcore/health` 回傳 200；結束後清除測試伺服器。
+
+PowerShell 7.6.7 parser 已驗證兩份 PowerShell 腳本語法；Windows uv 發行檔的
+SHA-256 與壓縮包內 `uv.exe` 位置已核對。Python、Bash、TOML 與 workflow YAML
+已做語法／解析檢查。語法檢查不等於已完成 Windows 實機安裝驗證。
+
+驗證命令：
+
+```sh
+python scripts/check_environment.py
+python -m unittest discover -s tests -v
+python scripts/smoke_start.py
+```
+
+限制：Windows 下載／雙擊流程、Docker 容器與真實 Streamlit Cloud 尚未在對應平台實測。
+GitHub CI 已設定 Windows PowerShell 5.1 首次安裝、PowerShell 7 再次啟動、
+含中文與空格路徑、完整測試與 HTTP 啟動檢查；需推送到 GitHub 後才能得到遠端結果。
+此處不把「已寫好 CI」記為「遠端 CI 已通過」。
+
+以下保留原始 v2 的檢查紀錄供參考。
+
+---
+
 # v2 驗證紀錄
 
 日期：2026-10-21。使用合成資料驗證，尚未針對你的實際 CSV 驗收。

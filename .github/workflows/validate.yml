@@ -1,0 +1,46 @@
+name: Validate
+on:
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - run: python scripts/check_environment.py
+      - run: python -m unittest discover -s tests -v
+      - run: python scripts/smoke_start.py
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@v4
+      - name: First installation in a path with spaces and Chinese characters
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP 'CSV Studio 中文'
+          New-Item -ItemType Directory -Force -Path $target | Out-Null
+          Get-ChildItem -LiteralPath $env:GITHUB_WORKSPACE -Force | Copy-Item -Destination $target -Recurse
+          Set-Location -LiteralPath $target
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\start.ps1 -SetupOnly
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "STUDIO_TEST_ROOT=$target" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Repeat setup, tests and actual server startup
+        run: |
+          Set-Location -LiteralPath $env:STUDIO_TEST_ROOT
+          & pwsh.exe -NoProfile -ExecutionPolicy Bypass -File .\start.ps1 -SetupOnly
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & .\.venv\Scripts\python.exe -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & .\.venv\Scripts\python.exe scripts/smoke_start.py
+          exit $LASTEXITCODE

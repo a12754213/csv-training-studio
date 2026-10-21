@@ -34,6 +34,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.utils.validation import check_is_fitted
 
 from text_features import SafeTextVectorizer, WordTokenizer, parse_quantity
+from version import __version__
 
 MAX_UPLOAD_BYTES = 30 * 1024 * 1024
 MAX_ROWS = 200_000
@@ -601,7 +602,7 @@ def prepare_data(frame: pd.DataFrame, config: PrepConfig) -> PreparedData:
     if learned.get("quantity_columns"):
         notes.append("數字與單位按量綱分欄；缺值／解析失敗以 0 及指示欄表示。新量綱不新增欄位，會標示為未知。幣別不換匯。")
     report = {
-        "version": "2.0.0", "config": asdict(config),
+        "version": __version__, "config": asdict(config),
         "rows": {"input": input_count, "duplicate_rows_found": duplicates,
                  "duplicates_removed": duplicates if config.deduplicate else 0,
                  "missing_target_quarantined": len(unlabeled),
@@ -700,7 +701,7 @@ def make_training_bundle(data: PreparedData, trained=None) -> bytes:
             z.writestr("metrics.json", json_text(metrics))
             z.writestr("test_predictions.csv", _csv_bytes(predictions.reset_index(names="source_index")))
         here = Path(__file__).resolve().parent
-        for filename in ["preprocessing.py", "text_features.py", "train.py", "predict.py"]:
+        for filename in ["preprocessing.py", "text_features.py", "version.py", "train.py", "predict.py"]:
             z.writestr(filename, (here / filename).read_bytes())
         exact = "\n".join(f"{name}=={version}" for name, version in data.report["environment"].items())
         z.writestr("requirements.txt", exact + "\n")

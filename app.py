@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from version import __version__
 
 from preprocessing import (
     DataPreparationError, PrepConfig, clean_frame, json_text,
@@ -23,7 +24,7 @@ st.markdown("""<style>
 .intro{color:#63716c;font-size:17px;line-height:1.7;margin-bottom:24px;}
 .tag{display:inline-block;border:1px solid #b6d7cc;border-radius:20px;padding:5px 12px;margin:0 6px 8px 0;color:#236653;font-size:12px;}
 </style>""", unsafe_allow_html=True)
-st.markdown('<div class="brand">CSV TRAINING STUDIO · 02</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="brand">CSV TRAINING STUDIO · {__version__}</div>', unsafe_allow_html=True)
 st.title("把 CSV，整理成能訓練的資料。")
 st.markdown('<div class="intro">先看懂資料，再整理特徵。保留每一步規則，讓新資料也能用同一套流程。</div>', unsafe_allow_html=True)
 st.markdown('<span class="tag">自動分析與補值</span><span class="tag">中文／英文斷詞</span><span class="tag">數字與單位拆分</span><span class="tag">可下載訓練資料</span>', unsafe_allow_html=True)
@@ -56,7 +57,9 @@ with st.sidebar:
         st.caption("預設只處理空白；NA 可能是真正類別，不會擅自刪除。")
     st.divider()
     st.caption("適合含數值、類別與文字的表格分類／回歸。支援 30 MB、20 萬列、500 個欄位以內的 CSV。")
-    st.caption("使用本機啟動方式時，資料由你的電腦處理，不會傳送給 AI 服務。")
+    st.caption("本地啟動：資料由你的電腦處理。線上使用：上傳內容會送到部署此程式的伺服器處理。兩者都不呼叫 AI 服務。")
+    st.caption("請下載要保留的結果；重新整理或伺服器重啟後，工作階段內容可能消失。")
+    st.caption(f"程式版本 v{__version__}")
 
 missing_tokens = tuple(x.strip() for x in token_text.split(",") if x.strip())
 try:

@@ -1,32 +1,42 @@
-# CSV Training Studio · v2
+# CSV Training Studio · v2.1.0
 
 把含數值、類別、評論文字與單位的 CSV 整理為可訓練的稀疏特徵，並保留相同規則處理新資料。
 
-**v2 新增：中文／英文斷詞、TF-IDF、自訂詞與停用詞、數字與單位拆分、相容單位換算、處理預覽及詞彙匯出。**
+**功能：中文／英文斷詞、TF-IDF、自訂詞與停用詞、數字與單位拆分、相容單位換算、處理預覽及詞彙匯出。**
 
 **流程：CSV → 概況與缺值分析 → 選擇目標 → 先切資料 → 訓練集 fit 補值／編碼／縮放 → 匯出 X/y → 基準模型。**
 
-## Windows / Anaconda 啟動
+## 下載後直接使用（Windows 11 x64）
 
-建議建立獨立環境，避免改動既有課程、ComfyUI 或 OneTrainer 的套件：
+1. 將整個 ZIP 解壓縮到固定資料夾，例如 `F:\CSV_Training_Studio`。
+2. 雙擊 **`START_WINDOWS.bat`**。
+3. 第一次會下載專案自己的 Python 3.12、安裝固定版本套件，完成後自動開啟瀏覽器。
+4. 之後仍雙擊同一個檔案。視窗要保持開啟；按 Ctrl+C 停止。
 
-```powershell
-conda create -n csvprep python=3.12 -y
-conda activate csvprep
-cd "C:\你解壓縮的位置\CSV_Training_Studio"
-python -m pip install -r requirements.txt
-python -m streamlit run app.py
-```
+不必先安裝 Python／Conda／Git，也不需要系統管理員。首次安裝需要網路與可寫入的磁碟空間，
+這是自動安裝版，不是包含所有套件的離線安裝包。需要連線到 GitHub、Python 發行檔和 PyPI。
+Python、套件與快取放在此專案的 `.runtime` / `.venv`，不更改你的 ComfyUI、OneTrainer 或課程環境。
+已完成安裝且套件未變更時可以離線啟動。遇到問題請看 [本地部署與排錯](docs/LOCAL.md)。
 
-支援的程式語法為 Python 3.10+；已用 Python 3.12 驗證。若你要沿用 `py310_env`，
-可先 `conda activate py310_env` 再安裝套件；pip 會選擇支援 Python 3.10 的版本。
-請注意安裝可能調整該環境既有套件，因此優先建議新的 `csvprep` 環境。
+## GitHub、線上使用與版本回溯
 
-啟動後在瀏覽器開啟 http://127.0.0.1:8501 。再次啟動只需要啟用環境、進入資料夾，
-執行 `python -m streamlit run app.py`。PowerShell 允許執行腳本時，也可用 `./start.ps1`。
+| 你的需求 | 使用方式 |
+|---|---|
+| 保存程式與修改紀錄 | GitHub repository；`main` 保存穩定版本 |
+| 回到某個版本 | Git tag / Release，例如 `v2.0.0`、`v2.1.0`；步驟見 [版本管理](docs/VERSION_CONTROL.md) |
+| 瀏覽器直接使用 | GitHub 接到 Streamlit Community Cloud；見 [線上部署](docs/DEPLOY.md) |
+| 本地一鍵使用 | 下載 Release ZIP → 解壓 → `START_WINDOWS.bat` |
+| 容器使用 | 已安裝 Docker 時，執行 `docker compose up --build -d` |
+| 每次修改自動驗證 | GitHub Actions 執行 Linux / Windows 測試 |
+| 發布新版下載包 | 推送 `vX.Y.Z` tag；通過測試後自動建立 Release ZIP |
 
-從第一版升級：解壓本版到新的資料夾，在該資料夾重新執行 `python -m pip install -r requirements.txt`，
-這會安裝新增的 jieba 相依套件。請用原始 CSV 重新整理與訓練；既有資料包應保留其原本的程式與環境。
+GitHub Pages 只能提供靜態網頁，無法直接執行本專案的 Python 訓練後端。
+線上版本使用 Streamlit 主機運算，資料會傳到該主機；本地版本則在你的電腦運算。
+程式不會把上傳 CSV 自動提交到 GitHub，也不呼叫外部 AI 模型。
+下載結果及訓練模型請自行保存；程式版本回溯不會還原未保存的資料或模型。
+
+若此 ZIP 有 `history/CSV_Training_Studio.bundle`，裡面含原始 v2.0.0 與此版的 Git 紀錄。
+[第一次發布到 GitHub](docs/GITHUB.md) 有保留完整歷史的操作，也提供 `PUBLISH_GITHUB.bat`。
 
 ## 第一次操作
 
@@ -43,7 +53,7 @@ python -m streamlit run app.py
 
 ## 自動處理的內容
 
-| 項目 | v2 行為 |
+| 項目 | 行為 |
 |---|---|
 | 讀檔 | 支援 UTF-8、UTF-16 BOM、Big5/CP950，並可手動選擇；自動或指定分隔符號 |
 | 型態 | 先保留文字與前導零，再只依訓練資料推測數值／類別／日期／文字／數字與單位 |
