@@ -179,14 +179,14 @@ class TextAndQuantityChecks(unittest.TestCase):
             p = Path(folder)
             with zipfile.ZipFile(io.BytesIO(make_training_bundle(result, trained))) as archive:
                 archive.extractall(p)
-            vocabularies = json.loads((p / "text_vocabulary.json").read_text())
+            vocabularies = json.loads((p / "text_vocabulary.json").read_text(encoding="utf-8"))
             self.assertIn("評論", vocabularies)
             self.assertIn("低噪音", {r["token"] for r in vocabularies["評論"]})
             self.assertTrue((p / "text_features.py").is_file())
             self.assertTrue((p / "transformation_preview.csv").is_file())
             before = trained[0].predict(result.raw_test)
-            subprocess.run([sys.executable, "train.py", "--data", "."], cwd=p, capture_output=True, text=True, check=True)
-            subprocess.run([sys.executable, "predict.py", "--csv", "raw_test.csv"], cwd=p, capture_output=True, text=True, check=True)
+            subprocess.run([sys.executable, "train.py", "--data", "."], cwd=p, capture_output=True, text=True, encoding="utf-8", check=True)
+            subprocess.run([sys.executable, "predict.py", "--csv", "raw_test.csv"], cwd=p, capture_output=True, text=True, encoding="utf-8", check=True)
             np.testing.assert_array_equal(before, pd.read_csv(p / "predictions.csv")["prediction"].to_numpy())
             np.testing.assert_array_equal(before, joblib.load(p / "model.joblib").predict(result.raw_test))
 

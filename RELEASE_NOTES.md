@@ -1,6 +1,6 @@
 CSV Training Studio 現在可透過 GitHub 管理版本，並部署到 Streamlit Community Cloud。
 
-本地使用：下載 `CSV_Training_Studio-v2.1.0.zip`，完整解壓後雙擊 `START_WINDOWS.bat`。
+本地使用：下載 `CSV_Training_Studio-v2.1.1.zip`，完整解壓後雙擊 `START_WINDOWS.bat`。
 首次需網路，自動準備專案自己的 Python 3.12 與套件。Windows 一鍵版支援 x64。
 
 包含 CSV 分析／補值、中文英文斷詞、TF-IDF、單位換算、基準訓練、資料包匯出，

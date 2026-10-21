@@ -1,6 +1,7 @@
 """使用已訓練模型，對新的原始 CSV 預測。"""
 from pathlib import Path
 import argparse
+import sys
 import json
 import joblib
 import pandas as pd
@@ -8,6 +9,10 @@ from preprocessing import clean_frame, json_text, read_csv_bytes
 
 
 def main():
+    # Keep Chinese output readable when Windows redirects stdout/stderr to pipes.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="對原始 CSV 套用相同規則並預測")
     parser.add_argument("--model", default="model.joblib")
     parser.add_argument("--csv", required=True)

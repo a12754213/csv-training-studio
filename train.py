@@ -1,6 +1,7 @@
 """解壓資料包後執行：python train.py --data ."""
 from pathlib import Path
 import argparse
+import sys
 import json
 import joblib
 import pandas as pd
@@ -9,6 +10,10 @@ from preprocessing import json_text, train_baseline
 
 
 def main():
+    # Keep Chinese output readable when Windows redirects stdout/stderr to pipes.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="用整理好的資料訓練基準模型")
     parser.add_argument("--data", default=".", help="解壓後的訓練資料包資料夾")
     args = parser.parse_args()

@@ -9,6 +9,10 @@
 `CHANGELOG.md` 說明差異；`version.py`、tag 和 Release 版本要一致。
 標籤不應搬移覆蓋；發現問題請發布新的修正版。
 
+目前 GitHub 已保留 `versions/v2.0.0`、`versions/v2.1.0` 分支作為原始快照。
+下載包內的歷史可能另含相同名稱的 tag；在 GitHub 尚未建立舊版 tag 時，
+可用 `origin/versions/v2.0.0` 或 `origin/versions/v2.1.0` 查看。
+
 ## 日常修改（已安裝 Git）
 
 先設定你自己的 Git 提交名稱與 email（可使用 GitHub 提供的 noreply email）。
@@ -72,6 +76,12 @@ git push -u origin fix/revert-change
 本文件不使用 `reset --hard` 或 force push 覆寫共享歷史。
 
 ## 發布下一版
+
+`main` 的 CI 通過後，Publish tested version 會為尚未發布的 `version.py` 版本
+建立 tag 與 Release ZIP。已發布版本不會被覆蓋；每次要發布新版請先增加版本號。
+此流程只處理同一儲存庫 main 分支的 push 測試，不處理外部分支或 Pull Request 的程式碼。
+
+以下 tag 流程仍可手動使用：
 
 1. 從 feature 分支修改程式，更新 `version.py`（例如 `2.1.1`）、`CHANGELOG.md` 和 `RELEASE_NOTES.md`。
 2. 若更新套件，先改 `requirements.in`，重新產生 `requirements.txt`，再跑全套測試。

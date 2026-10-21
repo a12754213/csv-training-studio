@@ -133,15 +133,15 @@ class PipelineChecks(unittest.TestCase):
             with zipfile.ZipFile(io.BytesIO(data)) as archive:
                 archive.extractall(p)
             before = joblib.load(p / "model.joblib").predict(result.raw_test)
-            subprocess.run([sys.executable, "train.py", "--data", "."], cwd=p, capture_output=True, text=True, check=True)
+            subprocess.run([sys.executable, "train.py", "--data", "."], cwd=p, capture_output=True, text=True, encoding="utf-8", check=True)
             after = joblib.load(p / "model.joblib").predict(result.raw_test)
             np.testing.assert_array_equal(before, after)
             subprocess.run([sys.executable, "predict.py", "--csv", "raw_test.csv"], cwd=p,
-                           capture_output=True, text=True, check=True)
+                           capture_output=True, text=True, encoding="utf-8", check=True)
             output = pd.read_csv(p / "predictions.csv")
             self.assertEqual(len(output), len(result.raw_test))
             self.assertEqual(sparse.load_npz(p / "X_train.npz").shape, result.X_train.shape)
-            report = json.loads((p / "report.json").read_text())
+            report = json.loads((p / "report.json").read_text(encoding="utf-8"))
             self.assertTrue(report["finite_output"])
 
     def test_regression_end_to_end(self):
