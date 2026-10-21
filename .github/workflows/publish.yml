@@ -44,5 +44,7 @@ jobs:
             git tag "$TAG" HEAD
             git push origin "refs/tags/$TAG"
           fi
+          git checkout -B main HEAD
           python scripts/build_release.py --with-history
+          git clone --no-checkout --branch main dist/CSV_Training_Studio.bundle "$RUNNER_TEMP/history-check"
           gh release create "$TAG" dist/*.zip dist/SHA256SUMS.txt --verify-tag --title "CSV Training Studio $TAG" --notes-file RELEASE_NOTES.md

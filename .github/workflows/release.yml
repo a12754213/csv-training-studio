@@ -23,7 +23,11 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.ref_name }}
         run: python -c "import os; from version import __version__; assert os.environ['RELEASE_TAG'] == 'v' + __version__, 'Tag must match version.py'"
-      - run: python scripts/build_release.py --with-history
+      - name: Build and verify portable history
+        run: |
+          git checkout -B main HEAD
+          python scripts/build_release.py --with-history
+          git clone --no-checkout --branch main dist/CSV_Training_Studio.bundle "$RUNNER_TEMP/history-check"
       - name: Publish downloadable ZIP and checksum
         env:
           GH_TOKEN: ${{ github.token }}

@@ -1,3 +1,8 @@
+# v2.1.2
+
+- 修正 CI 打包時 detached HEAD 導致攜帶的 Git history 缺少 main 分支。
+- 發布前驗證可從 bundle 還原 main 分支。
+
 # Changelog
 
 ## 2.1.1 — 2026-10-21
