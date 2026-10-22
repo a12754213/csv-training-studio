@@ -78,4 +78,4 @@ jobs:
                   "Review redirects above and Streamlit Cloud deployment logs."
               )
           print("Cloud HTTP smoke test passed.")
-                    PY
+          PY
