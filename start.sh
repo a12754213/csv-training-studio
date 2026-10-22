@@ -16,7 +16,7 @@ if [[ ! -x "$studio_python" ]]; then
 fi
 "$studio_python" -c 'import sys; sys.exit(0 if sys.version_info[:2] == (3,12) else 1)'
 if ! "$studio_python" scripts/check_environment.py --quiet; then
-  "$studio_python" -m pip install -r requirements.txt
+  "$studio_python" -m pip install -r requirements.lock.txt
   "$studio_python" scripts/check_environment.py
 fi
 if [[ "${1:-}" == '--setup-only' ]]; then exit 0; fi

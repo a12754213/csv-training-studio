@@ -16,7 +16,7 @@ def check_environment() -> list[str]:
         from packaging.requirements import Requirement
     except ImportError:
         return errors + ["Dependencies have not been installed."]
-    for line in (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines():
+    for line in (ROOT / "requirements.lock.txt").read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line or line.startswith("#"):
             continue

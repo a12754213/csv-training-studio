@@ -14,7 +14,7 @@ $runtimeDir = Join-Path $projectRoot '.runtime'
 $uvExe = Join-Path $runtimeDir 'uv\uv.exe'
 $uvVersion = '0.13.4'
 $uvArchiveSha256 = 'ccec7508a07d9933d7cb1261880633efcf1f30d6e6eddab21823f1dae6f23225'
-$requirements = Join-Path $projectRoot 'requirements.txt'
+$requirements = Join-Path $projectRoot 'requirements.lock.txt'
 $marker = Join-Path $venvDir '.requirements.sha256'
 
 function Invoke-Uv {

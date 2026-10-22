@@ -1,8 +1,8 @@
 FROM python:3.12-slim-bookworm
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_NO_CACHE_DIR=1
 WORKDIR /app
-COPY requirements.txt .
-RUN python -m pip install -r requirements.txt && useradd --create-home --uid 10001 studio
+COPY requirements.lock.txt .
+RUN python -m pip install -r requirements.lock.txt && useradd --create-home --uid 10001 studio
 COPY --chown=studio:studio . .
 USER studio
 EXPOSE 8501
