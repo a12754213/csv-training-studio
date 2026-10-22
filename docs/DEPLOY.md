@@ -3,6 +3,14 @@
 GitHub 保存程式與歷史；Streamlit 主機執行 Python、處理 CSV、提供瀏覽器介面。
 GitHub Pages 不支援本專案所需的 Python 後端。
 
+## 目前已建立的 Streamlit Cloud 網址
+
+使用者提供的 App 網址：https://csv-training-studio-nz7xft3au8v8d6pcrjrnkd.streamlit.app/
+
+健康檢查紀錄：https://github.com/a12754213/csv-training-studio/actions/workflows/cloud-smoke.yml
+
+Cloud 健康檢查使用外部 GitHub Runner 請求首頁與 `/_stcore/health`。通過代表 HTTP 端點可回應，不保證 CSV 上傳、補值、訓練和 ZIP 匯出已在雲端驗收。
+
 ## 直接部署這個儲存庫（實際填寫值）
 
 - Streamlit 登入與建立入口：https://share.streamlit.io/
@@ -12,7 +20,7 @@ GitHub Pages 不支援本專案所需的 Python 後端。
 - Python：`3.12`（Advanced settings）
 - 可用於「Paste GitHub URL」的檔案：https://github.com/a12754213/csv-training-studio/blob/main/app.py
 
-**注意：** 這些是已在 GitHub 存在的程式檔案與部署設定，不是已產生的線上 App 網址。初次 Streamlit 登入、GitHub 授權、Create app 與 Deploy 必須在擁有該平台帳號的操作階段完成；完成後在 Streamlit 取得真正的 `streamlit.app` 網址。
+**注意：** 上方已列出使用者提供的真實 App 網址。此段的 GitHub 參數可用於日後重新部署或建立另一個 App。
 
 ## 首次部署
 

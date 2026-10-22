@@ -6,6 +6,13 @@
 
 **流程：CSV → 概況與缺值分析 → 選擇目標 → 先切資料 → 訓練集 fit 補值／編碼／縮放 → 匯出 X/y → 基準模型。**
 
+## Streamlit 線上網址
+
+- **線上開啟：** https://csv-training-studio-nz7xft3au8v8d6pcrjrnkd.streamlit.app/
+- **服務存活檢查：** https://github.com/a12754213/csv-training-studio/actions/workflows/cloud-smoke.yml
+
+使用者已提供上方 Streamlit Community Cloud App 網址。可以透過瀏覽器上傳 CSV；上傳內容會送往雲端處理。請使用本地版處理機密資料。雲端 HTTP health 通過不代表 CSV 操作全流程已實測。
+
 ## 下載後直接使用（Windows 11 x64）
 
 1. 將整個 ZIP 解壓縮到固定資料夾，例如 `F:\CSV_Training_Studio`。

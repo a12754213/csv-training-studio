@@ -1,0 +1,48 @@
+name: Streamlit Cloud smoke check
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-cloud:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check live homepage and Streamlit health endpoint
+        env:
+          APP_URL: https://csv-training-studio-nz7xft3au8v8d6pcrjrnkd.streamlit.app
+        run: |
+          python - <<'PY'
+          import os
+          import time
+          import urllib.error
+          import urllib.request
+
+          url = os.environ["APP_URL"].rstrip("/")
+          for path in ("/_stcore/health", "/"):
+              for attempt in range(1, 19):
+                  try:
+                      request = urllib.request.Request(
+                          url + path,
+                          headers={"User-Agent": "csv-training-studio-smoke-test/1.0"},
+                      )
+                      with urllib.request.urlopen(request, timeout=18) as response:
+                          body = response.read(2048)
+                          status = response.status
+                          content_type = response.headers.get("Content-Type", "")
+                      print(f"{path}: status={status} content-type={content_type} body={body[:120]!r}", flush=True)
+                      if status == 200 and (path != "/_stcore/health" or b"ok" in body.lower()):
+                          break
+                      raise RuntimeError("Unexpected response")
+                  except (urllib.error.URLError, TimeoutError, RuntimeError) as error:
+                      print(f"{path}: attempt={attempt} error={error}", flush=True)
+                      if attempt == 18:
+                          raise
+                      time.sleep(15)
+          print("Cloud HTTP smoke test passed.")
+          PY
