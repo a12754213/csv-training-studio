@@ -76,7 +76,7 @@ with st.form('agent_training_form'):
         st.write('任務：時間序列預測')
         model = st.selectbox('模型', ['auto', 'ridge', 'random_forest'])
         lookback = st.number_input('歷史視窗（列）', min_value=1, max_value=365, value=int(options['lookback']))
-        horizon = st.number_input('預測後面第幾筆', min_value=1, max_value=100, value=1)
+        horizon = st.number_input('預測後面第幾筆', min_value=1, max_value=90, value=1)
     else:
         task = st.selectbox('任務類型（請依業務目的確認）', ['classification', 'regression'],
                             index=0 if suggested_task == 'classification' else 1,
