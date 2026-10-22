@@ -1,3 +1,9 @@
+# v2.1.3
+
+- 更新部署指南，填入實際 GitHub 儲存庫、main 分支及 app.py 入口，減少首次部署手動查找。
+- 校正 README 與啟動說明的目前版本資訊，補充已通過的 GitHub Windows / Linux CI 驗證紀錄。
+- 保留 v2.1.2 已驗證的前處理、模型與本地啟動行為，不變更依賴或運算邏輯。
+
 # v2.1.2
 
 - 修正 CI 打包時 detached HEAD 導致攜帶的 Git history 缺少 main 分支。

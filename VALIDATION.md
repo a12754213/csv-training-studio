@@ -1,3 +1,13 @@
+# GitHub 遠端驗證紀錄（v2.1.2；2026-10-22 查核）
+
+- [GitHub CI](https://github.com/a12754213/csv-training-studio/actions/runs/39633174924) 完成：Linux 與 Windows jobs 皆 success。
+- Windows job：在含中文及空格路徑完成第一次獨立 Python 安裝、重複 setup、unittest 與實際 HTTP 啟動檢查。
+- Linux job：安裝 requirements、環境檢查、unittest 與 HTTP 啟動檢查全數通過。
+- [GitHub 自動發布](https://github.com/a12754213/csv-training-studio/actions/runs/39633377952) success，已產生 v2.1.2 ZIP 與 SHA256SUMS.txt。
+- 以上是 GitHub Hosted Runner 的驗證；尚未直接操控使用者電腦，亦不代表 Streamlit Community Cloud 已建立 App。更新後各版仍以該版 Actions / Release 結果為準。
+
+---
+
 # v2.1.1 Windows 編碼修正
 
 首次 GitHub CI：Linux 全部通過；Windows 完成獨立環境安裝和介面測試，

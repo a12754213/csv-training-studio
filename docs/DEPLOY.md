@@ -3,6 +3,17 @@
 GitHub 保存程式與歷史；Streamlit 主機執行 Python、處理 CSV、提供瀏覽器介面。
 GitHub Pages 不支援本專案所需的 Python 後端。
 
+## 直接部署這個儲存庫（實際填寫值）
+
+- Streamlit 登入與建立入口：https://share.streamlit.io/
+- Repository：`a12754213/csv-training-studio`
+- Branch：`main`
+- Main file path：`app.py`
+- Python：`3.12`（Advanced settings）
+- 可用於「Paste GitHub URL」的檔案：https://github.com/a12754213/csv-training-studio/blob/main/app.py
+
+**注意：** 這些是已在 GitHub 存在的程式檔案與部署設定，不是已產生的線上 App 網址。初次 Streamlit 登入、GitHub 授權、Create app 與 Deploy 必須在擁有該平台帳號的操作階段完成；完成後在 Streamlit 取得真正的 `streamlit.app` 網址。
+
 ## 首次部署
 
 1. 完成 [GitHub 發布](GITHUB.md)。儲存庫根目錄必須直接看得到 `app.py`、`requirements.txt` 與 `.streamlit`。

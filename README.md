@@ -1,4 +1,4 @@
-# CSV Training Studio · v2.1.1
+# CSV Training Studio · v2.1.3
 
 把含數值、類別、評論文字與單位的 CSV 整理為可訓練的稀疏特徵，並保留相同規則處理新資料。
 
@@ -20,10 +20,13 @@ Python、套件與快取放在此專案的 `.runtime` / `.venv`，不更改你�
 
 ## GitHub、線上使用與版本回溯
 
+**部署這份程式：** 前往 [Streamlit Community Cloud](https://share.streamlit.io/) → Create app → 選擇已有 GitHub 專案，填入 repository `a12754213/csv-training-studio`、branch `main`、entrypoint `app.py`，並在 Advanced settings 使用 Python 3.12。也可以貼入 [GitHub 上的 app.py](https://github.com/a12754213/csv-training-studio/blob/main/app.py)。Streamlit 帳號授權與初次建立 App 必須由帳號持有人完成；正式網址以 Streamlit 實際提供的網址為準，不預設宣稱已上線。
+
+
 | 你的需求 | 使用方式 |
 |---|---|
 | 保存程式與修改紀錄 | GitHub repository；`main` 保存穩定版本 |
-| 回到某個版本 | Git tag / Release，例如 `v2.0.0`、`v2.1.1`；步驟見 [版本管理](docs/VERSION_CONTROL.md) |
+| 回到某個版本 | Git tag / Release，例如 `v2.0.0`、`v2.1.3`；步驟見 [版本管理](docs/VERSION_CONTROL.md) |
 | 瀏覽器直接使用 | GitHub 接到 Streamlit Community Cloud；見 [線上部署](docs/DEPLOY.md) |
 | 本地一鍵使用 | 下載 Release ZIP → 解壓 → `START_WINDOWS.bat` |
 | 容器使用 | 已安裝 Docker 時，執行 `docker compose up --build -d` |
