@@ -57,7 +57,7 @@ git switch --detach v2.1.0
 git switch main
 ```
 
-一鍵啟動會核對該版本的 `requirements.txt`。原始 v2.0.0 需依它自己的 README 手動啟動。
+一鍵啟動會核對該版本的 `requirements.lock.txt`（v2.1.3 以前為 `requirements.txt`）。原始 v2.0.0 需依它自己的 README 手動啟動。
 也可以在乾淨工作目錄執行 `git worktree add --detach ../studio-v2.1.0 v2.1.0`，獨立試用舊版本。
 
 ### 想讓線上版本撤銷某次改動
@@ -87,7 +87,7 @@ git push -u origin fix/revert-change
 以下 tag 流程仍可手動使用：
 
 1. 從 feature 分支修改程式，更新 `version.py`（例如 `2.1.1`）、`CHANGELOG.md` 和 `RELEASE_NOTES.md`。
-2. 若更新套件，先改 `requirements.in`，重新產生 `requirements.txt`，再跑全套測試。
+2. 若更新套件，先改 `requirements.in`，更新 Cloud 的 `requirements.txt`、重新產生 `requirements.lock.txt`，再跑全套測試。
 3. PR 合併到 main 後：
 
 ```powershell
@@ -114,8 +114,8 @@ Git 追蹤程式，不會自動記錄你上傳過的 CSV、訓練結果或下載
 維護者可安裝 uv 後執行：
 
 ```powershell
-uv pip compile requirements.in --universal --python-version 3.12 --no-emit-index-url --output-file requirements.txt
+uv pip compile requirements.in --universal --python-version 3.12 --no-emit-index-url --output-file requirements.lock.txt
 ```
 
-`requirements.txt` 鎖定直接及間接相依；Windows / Linux 依環境 marker 安裝對應項目。
+`requirements.lock.txt` 鎖定直接及間接相依；Windows / Linux 依環境 marker 安裝對應項目。Cloud 的 `requirements.txt` 是直接相依清單，需要與 `requirements.in` 中的指定版本同步。
 Python 固定 3.12 小版本系列，下載的修補版可能不同；這不是作業系統或二進位映像的完整快照。

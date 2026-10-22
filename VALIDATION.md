@@ -1,3 +1,11 @@
+# Cloud 依賴安裝診斷與調整（2026-10-22）
+
+使用者回報 Streamlit Cloud 的 `preprocessing.py` 在 `import joblib` 時出現 `ModuleNotFoundError`。原 `requirements.txt` 確實宣告了 `joblib==1.5.3`，因此不能把缺少宣告當作根因。
+
+改為 Cloud 直接依賴 `requirements.txt` 與本地完整鎖定 `requirements.lock.txt` 兩套用途。GitHub Actions 另外執行 `cloud-dependencies`，從乾淨 Python 3.12 Linux 環境使用 Cloud 清單安裝並 import `joblib`、`sklearn`、`pandas`、`numpy`、`scipy`、`streamlit`、`jieba`、`preprocessing`；此工作已成功。Cloud 真正部署需另檢查 Streamlit Logs 與網站瀏覽器結果，不能因 CI 成功便稱網站已修好。
+
+---
+
 # GitHub 遠端驗證紀錄（v2.1.2；2026-10-22 查核）
 
 - [GitHub CI](https://github.com/a12754213/csv-training-studio/actions/runs/39633174924) 完成：Linux 與 Windows jobs 皆 success。

@@ -6,6 +6,15 @@
 
 **流程：CSV → 概況與缺值分析 → 選擇目標 → 先切資料 → 訓練集 fit 補值／編碼／縮放 → 匯出 X/y → 基準模型。**
 
+## 雲端部署的依賴清單
+
+為排查 Streamlit Cloud 的 `ModuleNotFoundError: joblib`，本專案將相依套件分成兩份：
+
+- `requirements.txt`：**Streamlit Cloud 專用精簡清單**，直接列出 `joblib==1.5.3` 等七個重要套件，放在 `app.py` 相同目錄。
+- `requirements.lock.txt`：Windows 一鍵啟動、Linux、Docker 的**原有完整版本鎖定清單**。一鍵安裝維持隔離，不修改現有 ComfyUI 或 Conda。
+
+GitHub CI 的 `cloud-dependencies` 會在全新 Python 3.12 環境用雲端清單安裝、驗證所有必要 import。若網站仍顯示缺少套件，請到 Streamlit Cloud → Manage app → Logs 檢查實際安裝紀錄，再按 Reboot；GitHub 測試成功不等於 Streamlit Cloud 安裝成功。
+
 ## Streamlit 線上網址
 
 - **線上開啟：** https://csv-training-studio-nz7xft3au8v8d6pcrjrnkd.streamlit.app/

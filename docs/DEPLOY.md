@@ -3,13 +3,19 @@
 GitHub 保存程式與歷史；Streamlit 主機執行 Python、處理 CSV、提供瀏覽器介面。
 GitHub Pages 不支援本專案所需的 Python 後端。
 
+## 雲端套件安裝問題排查
+
+Cloud 偵測根目錄、與 `app.py` 同層的 `requirements.txt`，其中包含 `joblib==1.5.3`；本地安裝則使用 `requirements.lock.txt` 固定完整直接和間接相依。新加的 `cloud-dependencies` GitHub CI 工作會驗證在 Python 3.12 新環境安裝 Cloud 清單後可以匯入 `joblib` 和 `preprocessing`。
+
+若 Cloud 仍顯示 `ModuleNotFoundError`：請確認部署 branch `main` 和入口 `app.py`，到 Streamlit **Manage app → Logs** 找到套件安裝階段，再使用 **Reboot** 重新啟動及重新嘗試。既有 App 的 Python 版本無法在部署後直接修改；若有版本不符，應先保存 App 網址和設定，再依官方流程重建。GitHub 的測試成功不代表 Streamlit Cloud 主機已重建成功。
+
 ## 目前已建立的 Streamlit Cloud 網址
 
 使用者提供的 App 網址：https://csv-training-studio-nz7xft3au8v8d6pcrjrnkd.streamlit.app/
 
 健康檢查紀錄：https://github.com/a12754213/csv-training-studio/actions/workflows/cloud-smoke.yml
 
-Cloud 健康檢查使用外部 GitHub Runner 請求首頁與 `/_stcore/health`。通過代表 HTTP 端點可回應，不保證 CSV 上傳、補值、訓練和 ZIP 匯出已在雲端驗收。
+Cloud 健康檢查現在由 GitHub Runner 的 Chromium 真正載入 App 頁面，確認 Streamlit 標題顯示；即使成功，也不保證 CSV 上傳、補值、訓練和 ZIP 匯出已在雲端驗收。
 
 ## 直接部署這個儲存庫（實際填寫值）
 

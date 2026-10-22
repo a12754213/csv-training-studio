@@ -1,5 +1,8 @@
 # 本地部署
 
+本地 Windows、Linux 與 Docker 使用 `requirements.lock.txt` 鎖定直接與間接套件；Streamlit Community Cloud 另使用精簡 `requirements.txt`。不要拿雲端清單覆蓋本地鎖定檔。
+
+
 ## Windows 11 x64：雙擊啟動
 
 把整個專案解壓到固定位置，雙擊 `START_WINDOWS.bat`。不要直接在 ZIP 預覽中執行。
@@ -54,11 +57,11 @@
 
 ```powershell
 py -3.12 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements.lock.txt
 .\.venv\Scripts\python.exe scripts/serve.py
 ```
 
-若用 Conda，建立新的 Python 3.12 環境後安裝 `requirements.txt`，再執行 `python scripts/serve.py`。
+若用 Conda，建立新的 Python 3.12 環境後安裝 `requirements.lock.txt`，再執行 `python scripts/serve.py`。
 本發行版的部署與相依套件統一以 Python 3.12 為準，不能再沿用舊 README 的 3.10 支援宣告。
 
 ## Linux / macOS
