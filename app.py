@@ -3,14 +3,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 from version import __version__
+from automl import train_prepared
 
 from preprocessing import (
-    DataPreparationError, PrepConfig, clean_frame, json_text,
+    DataPreparationError, PrepConfig, _identifier_name, clean_frame, json_text,
     make_training_bundle, numeric_summary, prepare_data, preview_transformations,
     profile_frame, read_csv_bytes, train_baseline,
 )
@@ -31,7 +33,8 @@ st.markdown('<span class="tag">自動分析與補值</span><span class="tag">中
 
 SAMPLES = {"客戶流失｜分類": ("demo_churn.csv", "是否流失"),
            "房價預測｜回歸": ("demo_housing.csv", "房價萬元"),
-           "評論與單位｜混合特徵分類": ("demo_reviews.csv", "是否推薦")}
+           "評論與單位｜混合特徵分類": ("demo_reviews.csv", "是否推薦"),
+           "每日銷量｜時間序列": ("demo_timeseries.csv", "銷量")}
 
 with st.sidebar:
     st.header("開始整理")
@@ -75,6 +78,12 @@ cards[1].metric("原始欄位", len(frame.columns))
 cards[2].metric("缺值儲存格", f"{int(clean.isna().sum().sum()):,}")
 cards[3].metric("完全重複列", int(clean.duplicated().sum()))
 
+training_mode = st.radio("訓練模式", ["一般表格｜分類／回歸", "時間序列｜預測未來數值"],
+                         index=1 if sample and "時間序列" in sample else 0, horizontal=True, key=f"mode_{file_digest}")
+if os.environ.get("CSV_STUDIO_LOCAL") == "1":
+    from chatgpt_panel import render_chatgpt_panel
+    render_chatgpt_panel()
+
 tab_overview, tab_prepare, tab_output = st.tabs(["1 · 資料概況", "2 · 整理與切分", "3 · 訓練與下載"])
 with tab_overview:
     st.subheader("資料預覽")
@@ -92,6 +101,11 @@ with tab_overview:
         st.dataframe(summary.round(3), width="stretch", hide_index=True)
         st.caption("IQR 只標記可能的離群值，不直接刪除。這是全表探索統計，不會用於前處理的 fit。")
 
+if training_mode.startswith("時間序列"):
+    from forecast_ui import render_forecast_ui
+    render_forecast_ui(frame, file_digest, missing_tokens, tab_prepare, tab_output)
+    st.stop()
+
 with tab_prepare:
     st.subheader("先告訴我：你要預測什麼？")
     default_target = SAMPLES[sample][1] if sample else None
@@ -102,6 +116,8 @@ with tab_prepare:
     task_label = right.selectbox("任務類型", ["分類｜預測類別", "回歸｜預測數值"],
                                  index=1 if sample and "回歸" in sample else 0, key=f"task_{file_digest}")
     task = "classification" if task_label.startswith("分類") else "regression"
+    model_label = st.selectbox("模型選擇", ["基準模型", "Random Forest", "AutoML｜比較後選擇"], key=f"model_{file_digest}")
+    model_choice = {"基準模型": "baseline", "Random Forest": "random_forest", "AutoML｜比較後選擇": "auto"}[model_label]
     if target in frame:
         n_missing = int(clean[target].isna().sum())
         st.caption(f"目標的不同值數：{clean[target].nunique(dropna=True):,} · 缺失目標列：{n_missing:,}（會另外隔離，不補答案）")
@@ -124,9 +140,18 @@ with tab_prepare:
     deduplicate = st.checkbox("切分前移除完全重複列", value=True)
 
     st.subheader("自動整理，也能手動調整")
+    selectable = [c for c in frame if c not in [target, split_column]]
+    suggested = [c for c in frame if _identifier_name(c)]
+    excluded_columns = st.multiselect(
+        "不參與訓練的欄位", selectable,
+        default=[c for c in suggested if c in selectable],
+        key=f"exclude_{file_digest}_{target}_{split_column}",
+        help="編號、姓名、流水號或預測時還不知道的欄位可在這裡排除。原始資料仍保留於下載包。")
+    remaining = [c for c in selectable if c not in excluded_columns]
+    st.caption(f"已排除 {len(excluded_columns)} 欄；剩餘 {len(remaining)} 個候選特徵。目標與切分欄會自動排除。")
     role_labels = {"自動判斷": "auto", "數值": "numeric", "類別": "categorical", "日期": "datetime",
                    "文字斷詞 + TF-IDF": "text", "數字 + 單位": "quantity", "排除": "ignore"}
-    role_columns = [c for c in frame if c not in [target, split_column]]
+    role_columns = remaining
     kind_labels = {v: k for k, v in role_labels.items()}
     kind_labels.update({"identifier": "疑似識別碼，排除", "empty": "空欄，排除"})
     guessed = profile.set_index("欄位")["推測類型"].to_dict()
@@ -136,7 +161,7 @@ with tab_prepare:
     edited = st.data_editor(role_table, hide_index=True, width="stretch", disabled=["欄位", "全表格式建議"],
                             column_config={"處理方式": st.column_config.SelectboxColumn(
                                 "處理方式", options=list(role_labels), required=True)},
-                            key=f"roles_{file_digest}_{target}_{split_column}")
+                            key=f"roles_{file_digest}_{target}_{split_column}_{tuple(excluded_columns)}")
     st.caption("評論／描述可轉文字特徵；明確的單一數量可拆數字與單位。ID 自動排除；型號與前導零代碼保留完整類別。自動判定最終以訓練集為準，可在此手動指定。")
     st.caption("請自行排除預測時還不知道的資訊，例如以評論預測推薦時，必須確定預測當下已經有評論。")
     with st.expander("補值與編碼設定", expanded=False):
@@ -191,7 +216,8 @@ with tab_prepare:
                      custom_words, stop_words, text_lowercase, max_text_chars, columns=[preview_col]),
                      width="stretch", hide_index=True)
         st.caption("此處只預覽解析方式，尚未補值或建立 TF-IDF。設定變更後需要重新整理。")
-    config = PrepConfig(target, task, test_size, seed, split_mode, split_column, deduplicate, prep_args)
+    config = PrepConfig(target, task, test_size, seed, split_mode, split_column, deduplicate, prep_args,
+                        tuple(excluded_columns), model_choice)
     signature = hashlib.sha256((file_digest + repr(config)).encode()).hexdigest()
     if st.session_state.get("result_signature") != signature:
         for key in ("prepared", "trained", "download_bytes"):
@@ -218,6 +244,8 @@ with tab_output:
         a.metric("訓練資料", f"{prepared.X_train.shape[0]:,} 筆")
         b.metric("測試資料", f"{prepared.X_test.shape[0]:,} 筆")
         c.metric("輸出特徵", f"{prepared.X_train.shape[1]:,} 欄")
+        st.write("實際採用的原始特徵：", "、".join(prepared.report["used_feature_columns"]))
+        st.caption("手動排除：" + ("、".join(prepared.report["excluded_columns"]) or "無"))
         for note in prepared.report["notes"]:
             st.caption("• " + note)
         st.write("處理後的特徵預覽（前 8 筆、最多 20 欄）")
@@ -235,20 +263,22 @@ with tab_output:
             st.caption("invalid_converted_to_missing：數值／日期／單位解析失敗；unknown_categories：新類別；unseen_quantity_dimensions：新量綱。text_nonempty_zero_vectors：非空但沒有詞彙命中的文字；text_truncated_rows：超過字數上限。")
             st.json(prepared.report["learned_from_training_only"])
         st.divider()
-        st.subheader("先跑一個基準模型")
-        st.caption("分類使用 Logistic Regression；回歸使用 Ridge。會與只猜最多類別／平均值的 Dummy 模型比較。這不是自動找最佳模型。")
+        st.subheader("訓練與評估")
+        st.caption("基準模型為 Logistic Regression／Ridge，也可選 Random Forest。AutoML 只用訓練集內的驗證資料比較，再訓練選中的模型；測試集最後才評估。")
         if st.button("訓練並查看測試結果", type="secondary"):
             try:
                 with st.spinner("訓練模型並評估一次保留的測試集…"):
-                    st.session_state["trained"] = train_baseline(
-                        prepared.preprocessor, prepared.X_train, prepared.X_test,
-                        prepared.y_train, prepared.y_test, prepared.config.task, prepared.config.seed)
+                    st.session_state["trained"] = train_prepared(prepared)
                     st.session_state.pop("download_bytes", None)
             except (DataPreparationError, ValueError, OverflowError) as exc:
                 st.error(str(exc))
         trained = st.session_state.get("trained")
         if trained is not None:
             _, metrics, predictions = trained
+            if "model_comparison" in metrics:
+                st.write("驗證集模型比較（不使用測試分數選模型）")
+                st.dataframe(pd.json_normalize(metrics["model_comparison"]), hide_index=True, width="stretch")
+            st.caption("這次模型：" + metrics["model"])
             scores = pd.DataFrame({"基準模型": metrics["test_scores"], "Dummy 對照": metrics["dummy_scores"]})
             st.dataframe(scores, width="stretch")
             st.caption("Accuracy／balanced accuracy／macro-F1 越高越好；MAE／RMSE 越低越好，R² 越高越好。")

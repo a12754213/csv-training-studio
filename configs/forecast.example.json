@@ -1,0 +1,11 @@
+{
+  "task": "time_series",
+  "target": "銷量",
+  "time_column": "日期",
+  "excluded_columns": ["流水號"],
+  "feature_columns": ["溫度"],
+  "lookback": 30,
+  "horizon": 1,
+  "test_size": 0.2,
+  "model": "auto"
+}

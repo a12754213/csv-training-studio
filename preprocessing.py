@@ -22,6 +22,7 @@ from scipy import sparse
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.dummy import DummyClassifier, DummyRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.metrics import (
@@ -488,6 +489,8 @@ class PrepConfig:
     split_column: str | None = None
     deduplicate: bool = True
     preprocessor: dict = field(default_factory=dict)
+    excluded_columns: tuple[str, ...] = ()
+    model: str = "baseline"
 
 
 @dataclass
@@ -509,6 +512,13 @@ def prepare_data(frame: pd.DataFrame, config: PrepConfig) -> PreparedData:
         raise DataPreparationError("請先選擇目標欄位。")
     if config.task not in {"classification", "regression"}:
         raise DataPreparationError("請指定分類或回歸任務。")
+    if config.model not in {"baseline", "random_forest", "auto"}:
+        raise DataPreparationError("表格模型支援 baseline、random_forest 或 auto。")
+    unknown = set(config.excluded_columns) - set(frame.columns)
+    if unknown:
+        raise DataPreparationError(f"排除清單含不存在的欄位：{sorted(unknown)}")
+    if config.target in config.excluded_columns:
+        raise DataPreparationError("目標欄位不能同時列入排除清單。")
     if not 0.1 <= config.test_size <= 0.4:
         raise DataPreparationError("測試集比例需介於 10% 到 40%。")
     clean = clean_frame(frame.reset_index(drop=True), config.preprocessor.get("missing_tokens", ()))
@@ -573,15 +583,18 @@ def prepare_data(frame: pd.DataFrame, config: PrepConfig) -> PreparedData:
         unseen = set(y_test) - set(y_train)
         if unseen:
             raise DataPreparationError(f"測試集有訓練集未出現的目標類別：{sorted(unseen)}。請檢查類別與切分設計。")
-    excluded = [config.target]
+    excluded = [config.target, *config.excluded_columns]
     if config.split_mode in {"group", "time"}:
         excluded.append(config.split_column)
     feature_cols = [c for c in labeled.columns if c not in excluded]
     if not feature_cols:
-        raise DataPreparationError("排除目標與切分欄後，沒有特徵欄位。")
+        raise DataPreparationError("排除選定欄位、目標與切分欄後，沒有特徵欄位。")
     preprocessor = TabularPreprocessor(**config.preprocessor)
     X_train = preprocessor.fit_transform(raw_train[feature_cols])
     X_test = preprocessor.transform(raw_test[feature_cols])
+    explicit_decisions = [{"column": c, "requested": "ignore", "kind": "ignore",
+                           "action": "drop", "reason": "使用者排除"}
+                          for c in dict.fromkeys(config.excluded_columns)]
     notes = ["缺失目標列已隔離，沒有推測或補填標籤。", "所有補值、類別字典、TF-IDF 詞彙與 IDF、縮放及自動欄位選擇只在訓練集 fit。",
              "日期展開不代表已完成時間序列預測；預測時尚未知的欄位需自行排除。",
              "測試集僅供最終評估；不要反覆看測試分數調參。"]
@@ -608,8 +621,10 @@ def prepare_data(frame: pd.DataFrame, config: PrepConfig) -> PreparedData:
                  "missing_target_quarantined": len(unlabeled),
                  "train": len(raw_train), "test": len(raw_test)},
         "feature_columns": feature_cols, "feature_count": X_train.shape[1],
+        "excluded_columns": list(dict.fromkeys(config.excluded_columns)),
+        "used_feature_columns": [spec["column"] for spec in preprocessor.specs_],
         "output_feature_names": preprocessor.get_feature_names_out().tolist(),
-        "column_decisions": preprocessor.decisions_,
+        "column_decisions": explicit_decisions + preprocessor.decisions_,
         "learned_from_training_only": learned,
         "train_audit": preprocessor.audit(raw_train), "test_audit": preprocessor.audit(raw_test),
         "finite_output": bool(np.isfinite(X_train.data).all() and np.isfinite(X_test.data).all()),
@@ -633,13 +648,20 @@ def _scores(y_true, predictions, task):
             "r2": float(r2_score(y_true, predictions))}
 
 
-def train_baseline(preprocessor, X_train, X_test, y_train, y_test, task, seed=42):
+def train_baseline(preprocessor, X_train, X_test, y_train, y_test, task, seed=42, model_name="baseline"):
+    if model_name not in {"baseline", "random_forest"}:
+        raise DataPreparationError("模型必須為 baseline 或 random_forest。")
     if task == "classification":
         estimator = LogisticRegression(max_iter=1500, class_weight="balanced", random_state=seed)
         dummy = DummyClassifier(strategy="most_frequent")
     else:
         estimator = Ridge(alpha=1.0, solver="lsqr")
         dummy = DummyRegressor(strategy="mean")
+    if model_name == "random_forest":
+        cls = RandomForestClassifier if task == "classification" else RandomForestRegressor
+        kwargs = {"class_weight": "balanced_subsample"} if task == "classification" else {}
+        estimator = cls(n_estimators=150, max_depth=12, min_samples_leaf=2, n_jobs=1,
+                        random_state=seed, **kwargs)
     with warnings.catch_warnings(record=True) as captured:
         warnings.simplefilter("always")
         estimator.fit(X_train, y_train)
@@ -701,7 +723,7 @@ def make_training_bundle(data: PreparedData, trained=None) -> bytes:
             z.writestr("metrics.json", json_text(metrics))
             z.writestr("test_predictions.csv", _csv_bytes(predictions.reset_index(names="source_index")))
         here = Path(__file__).resolve().parent
-        for filename in ["preprocessing.py", "text_features.py", "version.py", "train.py", "predict.py"]:
+        for filename in ["preprocessing.py", "text_features.py", "version.py", "train.py", "predict.py", "automl.py"]:
             z.writestr(filename, (here / filename).read_bytes())
         exact = "\n".join(f"{name}=={version}" for name, version in data.report["environment"].items())
         z.writestr("requirements.txt", exact + "\n")
@@ -736,7 +758,8 @@ predict.py 接受原始欄位；不要先自行編碼或標準化。
 
 ## 使用邊界
 
-這是一般表格分類／回歸的基礎流程，不會自動理解業務規則、確認因果關係或保證準確率。
+這是一般表格分類／回歸流程；AutoML 僅比較有限候選模型，並用訓練集內的驗證資料選模，
+不會自動理解業務規則、確認因果關係或保證準確率。
 請排除預測當下尚未知的欄位。同一人多筆要分組切分；時間資料需檢查時間範圍、預測跨度與重疊。
 不自動截斷離群值、不補目標、不做 SMOTE。文字以 jieba／英文分詞及 TF-IDF 表示，並非語意嵌入模型。
 每筆文字預設最多處理前 20,000 字，可在設定中調整；截斷和零向量數見 report.json。

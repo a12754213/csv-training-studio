@@ -1,3 +1,12 @@
+# v2.2.0 · 2026-10-22
+
+- 加入 AutoML 內層驗證選模、Agent 任務建議、本機 TensorFlow LSTM 與 .keras 匯出。
+- 加入明確的 excluded_columns 設定、UI 多選、結果失效與實際欄位紀錄。
+- 加入單一時間序列的歷史視窗、固定未來跨度、交界隔離、Ridge／Random Forest、Naive 評估、獨立預測與重訓匯出包。
+- 加入 ChatGPT 本機 STDIO MCP、背景工作與原始檔校驗、Streamlit 工作下載區、CLI 與 Windows 設定入口。
+- 增加因果時間對齊、未來資料不影響訓練、匯出重載、欄位排除及真實 MCP 協定測試。
+- 保留 Streamlit Cloud 原有最小依賴，MCP 僅作為本機選用安裝。
+
 # v2.1.4 — 2026-10-22
 
 - 調整 Streamlit Cloud 相依清單，只列出必要的七個直接依賴套件（包含 joblib），減少與雲端安裝環境的衝突。

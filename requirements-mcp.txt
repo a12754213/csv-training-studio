@@ -1,0 +1,2 @@
+# Optional local ChatGPT bridge. Base Streamlit Cloud dependencies stay unchanged.
+mcp==1.30.0
