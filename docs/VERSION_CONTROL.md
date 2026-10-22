@@ -7,6 +7,7 @@
 - `v2.1.1`：修正 Windows UTF-8 測試／匯出往返。
 - `v2.1.2`：確保 Release 歷史包含可還原的 main 分支。
 - `v2.1.3`：補充經驗證的 CI 狀態，對齊部署說明與版本資訊。
+- `v2.1.4`：將 Streamlit Cloud 的精簡清單與本地完整鎖定環境分離，新增雲端依賴 CI 測試。
 
 `main` 放可用版本；`feature/功能名稱` 放進行中的修改；tag 為已發布的固定版本。
 `CHANGELOG.md` 說明差異；`version.py`、tag 和 Release 版本要一致。

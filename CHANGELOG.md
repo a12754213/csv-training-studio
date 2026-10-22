@@ -1,3 +1,10 @@
+# v2.1.4 — 2026-10-22
+
+- 調整 Streamlit Cloud 相依清單，只列出必要的七個直接依賴套件（包含 joblib），減少與雲端安裝環境的衝突。
+- 將原有直接／間接版本完全鎖定清單保存在 `requirements.lock.txt`，Windows 一鍵啟動、Linux、Docker 與本地驗證使用原有版本。
+- GitHub CI 加入全新 Python 3.12 環境安裝 Cloud 清單、實際 import 所有主要程式依賴的回歸測試。
+- 雲端建置狀態仍須從 Streamlit Cloud Logs 確認，無法由 GitHub CI 判定完成修復。
+
 # v2.1.3
 
 - 更新部署指南，填入實際 GitHub 儲存庫、main 分支及 app.py 入口，減少首次部署手動查找。
