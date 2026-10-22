@@ -56,4 +56,5 @@ jobs:
       - name: Install the same minimal requirements file Streamlit Cloud sees
         run: python -m pip install -r requirements.txt
       - name: Verify Cloud-importable app dependencies
-        run: python -c "import joblib, sklearn, pandas, numpy, scipy, streamlit, jieba, preprocessing; print('cloud dependencies: OK')"
+        run: |
+          python -c "import joblib, sklearn, pandas, numpy, scipy, streamlit, jieba, preprocessing; print('cloud dependencies OK')"
