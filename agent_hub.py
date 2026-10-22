@@ -5,16 +5,17 @@ which registered capability to run and approve expensive operations.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Callable
+from dataclasses import dataclass, field
+from typing import Any, Callable, Mapping
 
 
 @dataclass(frozen=True)
 class AgentContext:
-    payload: bytes
-    filename: str
+    payload: bytes = b''
+    filename: str = ''
     encoding: str = 'auto'
     separator: str = 'auto'
+    metadata: Mapping[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
