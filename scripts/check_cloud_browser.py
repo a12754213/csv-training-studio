@@ -5,15 +5,34 @@ public apps may use JS and cookies to establish a session.
 """
 
 import os
+from pathlib import Path
+import sys
 import time
 from urllib.parse import urlsplit
 
 from playwright.sync_api import sync_playwright
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from version import __version__
 
 APP_URL = os.environ.get("APP_URL", "").strip()
 EXPECTED_HEADING = "把 CSV，整理成能訓練的資料。"
 ATTEMPTS = 3
+
+
+def wait_for_app_frame(page, timeout=40):
+    """Community Cloud may wrap the app in a child iframe."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        for frame in page.frames:
+            try:
+                if frame.get_by_role("heading", name=EXPECTED_HEADING).is_visible():
+                    return frame
+            except Exception:
+                # A deployment/navigation may replace the iframe during this check.
+                continue
+        time.sleep(0.5)
+    raise TimeoutError("App heading was not visible in any page frame")
 
 
 def safe_location(url):
@@ -33,9 +52,18 @@ def main():
             print(f"Browser check attempt {attempt}/{ATTEMPTS}", flush=True)
             try:
                 page.goto(APP_URL, wait_until="domcontentloaded", timeout=45000)
-                page.get_by_role("heading", name=EXPECTED_HEADING).wait_for(
-                    state="visible", timeout=20000
-                )
+                app = wait_for_app_frame(page)
+                app.get_by_text(f"程式版本 v{__version__}", exact=True).wait_for(
+                    state="visible", timeout=30000)
+                app.get_by_role("tab", name="2 · 整理與切分").click(timeout=10000)
+                app.get_by_text("不參與訓練的欄位", exact=True).wait_for(
+                    state="visible", timeout=10000)
+                # This control is rendered after constructing PrepConfig. A heading
+                # alone previously passed even with stale imported Python modules.
+                app.get_by_role("button", name="整理成訓練資料", exact=True).wait_for(
+                    state="visible", timeout=10000)
+                if app.get_by_test_id("stException").count():
+                    raise RuntimeError("Streamlit displayed an application exception")
             except Exception as exc:
                 # Avoid logging auth payloads or session tokens.
                 try:
@@ -44,7 +72,11 @@ def main():
                     title = "(unavailable)"
                 try:
                     # Visible content, not page source/cookies/secret query strings.
-                    visible_text = " ".join(page.locator("body").inner_text(timeout=5000).split())[:600]
+                    visible_text = " ".join(
+                        frame.locator("body").inner_text(timeout=5000)
+                        for frame in page.frames
+                    )
+                    visible_text = " ".join(visible_text.split())[:600]
                 except Exception:
                     visible_text = "(body text unavailable)"
                 print(f"VISIBLE PAGE TEXT: {visible_text!r}", flush=True)
@@ -57,8 +89,9 @@ def main():
                     time.sleep(6)
             else:
                 print(
-                    "PASS: CSV Training Studio heading is visible in a real "
-                    f"browser at {safe_location(page.url)}",
+                    f"PASS: CSV Training Studio v{__version__}, feature exclusions "
+                    "and preparation control are visible without app exceptions "
+                    f"at {safe_location(page.url)}",
                     flush=True,
                 )
                 browser.close()
