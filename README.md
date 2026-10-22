@@ -1,10 +1,17 @@
-# CSV Training Studio · v2.1.4
+# CSV Training Studio · v2.2.0
 
 把含數值、類別、評論文字與單位的 CSV 整理為可訓練的稀疏特徵，並保留相同規則處理新資料。
 
 **功能：中文／英文斷詞、TF-IDF、自訂詞與停用詞、數字與單位拆分、相容單位換算、處理預覽及詞彙匯出。**
 
 **流程：CSV → 概況與缺值分析 → 選擇目標 → 先切資料 → 訓練集 fit 補值／編碼／縮放 → 匯出 X/y → 基準模型。**
+
+## v2.2.0 新增
+
+- **明確的欄位排除多選**：編號等欄位可直接選擇不參與訓練；修改後舊結果失效，報告列出實際採用／排除的欄位。
+- **時間序列模型**：指定日期、歷史視窗、未來跨度，訓練 Ridge／Random Forest／本機 LSTM，與 Naive 比較並匯出獨立模型。詳見 [時間序列](docs/TIME_SERIES.md)。
+- **AutoML 選模**：一般表格與時間序列都能在訓練集內建立驗證區間，比較候選模型後再評估保留測試集。Agent 可用 `suggest_training_plan` 取得可解釋的任務與欄位建議。
+- **ChatGPT 本機對話操作**：共用訓練核心的 MCP 與 CLI，支援匯入、背景訓練、結果查詢與下載；本機 Streamlit 顯示工作結果。先執行 `SETUP_CHATGPT.bat`，再做一次本機連接，詳見 [ChatGPT 設定](docs/CHATGPT_LOCAL.md)。
 
 ## 雲端部署的依賴清單
 
@@ -56,6 +63,8 @@ GitHub Pages 只能提供靜態網頁，無法直接執行本專案的 Python �
 
 若此 ZIP 有 `history/CSV_Training_Studio.bundle`，裡面含原始 v2.0.0 與此版的 Git 紀錄。
 [第一次發布到 GitHub](docs/GITHUB.md) 有保留完整歷史的操作，也提供 `PUBLISH_GITHUB.bat`。
+
+需要本機 LSTM 時，執行 **`SETUP_LSTM.bat`**（也會準備 MCP），再重新啟動本機網頁／ChatGPT 連接。Windows 原生安裝使用 CPU；NVIDIA GPU 需另設 WSL2。
 
 ## 第一次操作
 
@@ -209,7 +218,7 @@ print(cross_val_score(pipeline, X, y, cv=cv, scoring="f1_macro"))
 
 ## 目前的界線
 
-- 針對含文字特徵的表格分類／回歸；不是完整 AutoML、語意理解、影像或多步時間序列系統。
+- 支援表格分類／回歸及單一序列的固定跨度預測；提供有限候選模型的 AutoML 比較及本機 LSTM；未提供 GRU、多序列、遞迴多步或大範圍超參數搜尋。
 - 不自動修正資料的業務含義，無法保證識別所有答案洩漏欄位。
 - 只有已列明格式的單一數量才解析；裸千分位數字（例如沒有單位的 1,200）、複合尺寸、範圍與含糊單位需先清理。
 - 不自動處理異常值、SMOTE 或合成標籤；這些要依資料來源與任務決定。
@@ -246,4 +255,4 @@ print(cross_val_score(pipeline, X, y, cv=cv, scoring="f1_macro"))
 - https://github.com/fxsjy/jieba
 - https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
 
-本專案不需要 API key，不會將 CSV 傳給第三方 AI 模型。
+訓練核心與 MCP 本機連接不需要 OpenAI API key。直接使用網頁時不呼叫 AI；使用 ChatGPT 操作時，工具回傳的欄位、摘要與結果會進入對話，依 ChatGPT 的存取與資料設定處理。

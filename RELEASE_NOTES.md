@@ -1,18 +1,14 @@
-CSV Training Studio 現在可透過 GitHub 管理版本，並部署到 Streamlit Community Cloud。
+# CSV Training Studio v2.2.0
 
-本地使用：下載 `CSV_Training_Studio-v2.1.4.zip`，完整解壓後雙擊 `START_WINDOWS.bat`。
-首次需網路，自動準備專案自己的 Python 3.12 與套件。Windows 一鍵版支援 x64。
+新增可見的訓練特徵排除、真正的時間序列預測及 ChatGPT 本機訓練介面。
 
-包含 CSV 分析／補值、中文英文斷詞、TF-IDF、單位換算、基準訓練、資料包匯出，
-以及版本回溯指南、可攜 Git 歷史、Linux／Windows 自動測試與 Release 打包。
+- 表格：多選不參與訓練的欄位，輸出採用／排除紀錄；排除欄不再是模型輸入。
+- 時間序列：歷史視窗 + Ridge／Random Forest，嚴格時間交界、Naive 比較、模型與預測匯出。提供本機選用 LSTM 與 .keras 匯出；尚未提供 GRU。
+- ChatGPT：SETUP_CHATGPT.bat 安裝本機 MCP 依賴並產生設定；需在支援本機工具的客戶端完成一次連接。雲端對話無法自動讀取 Windows Python 或本機路徑。
+- 本機網頁可以查看並下載 ChatGPT 工作結果；自動化與網頁共用訓練核心。
 
-線上部署入口為 `app.py`、Python 選 3.12，請依 `docs/DEPLOY.md` 設定平台。
-本地啟動不需要 NVIDIA 顯卡、API key 或既有 Conda 環境。
-請參考 `VALIDATION.md` 查看實際已驗證項目與尚未驗證的平台。
+使用 START_WINDOWS.bat 開啟本機網頁；時間序列見 docs/TIME_SERIES.md，對話流程見 docs/CHATGPT_LOCAL.md。
+完整測試說明見 VALIDATION.md。GitHub Release 由 CI 通過後自動產生；雲端站台操作和使用者本機 ChatGPT 連線需分別驗收。
 
-此版更新線上部署的實際 GitHub repo、branch 與 app.py 填寫方式，修正過時文件版本號，並補充已通過的 Windows / Linux GitHub CI 紀錄。v2.1.2 的歷史匯入修正保留。首次 Streamlit Cloud 建立與平台帳號授權仍須由帳號持有人完成。
-
-## v2.1.4：Streamlit Cloud 相依套件修正
-
-針對雲端端出現 `ModuleNotFoundError: joblib`，將雲端用的精簡依賴檔 `requirements.txt` 與本地完整鎖定清單 `requirements.lock.txt` 分離；本地腳本、Docker 與 CI 繼續採用相同鎖定版本。
-GitHub CI 新增獨立 Cloud 依賴安裝及 import 測試，可直接檢查 joblib、scikit-learn、streamlit 和 preprocessing。Streamlit Cloud 仍需平台重新部署、查看實際 Build Logs 才能確認是否修復。
+- AutoML：比較有限候選模型，使用內層驗證挑選，測試集最後才評估。MCP 提供任務與特徵建議工具。
+- 本機 LSTM：執行 SETUP_LSTM.bat；時間驗證 EarlyStopping、最佳輪數重訓、獨立模型重載。Windows 原生安裝預設 CPU，GPU 需 WSL2。

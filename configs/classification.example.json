@@ -1,0 +1,8 @@
+{
+  "task": "classification",
+  "target": "是否流失",
+  "excluded_columns": ["客戶編號"],
+  "test_size": 0.2,
+  "model": "auto",
+  "split_mode": "random"
+}

@@ -1,3 +1,27 @@
+# v2.2.0 驗收紀錄（2026-10-22）
+
+本次開發環境 Python 3.12，完整 unittest 55 項通過；實際 Streamlit HTTP 啟動通過。
+
+新增涵蓋：
+
+- AutoML 在獨立驗證集挑模型；更改保留測試答案不影響選模結果。
+- TensorFlow 2.21 實際 LSTM 訓練、最佳 epoch 重訓、.keras 與 joblib 匯出、新程序重載推論；也測試納入 AutoML。
+
+- 排除欄位即使被指定為數值，也不會進入模型；省略排除欄仍可對新資料預測。
+- 修改 UI 排除／歷史跨度設定會使舊訓練與下載結果失效。
+- 單一序列的視窗對齊、交界標籤隔離、缺目標不壓縮時間軸、Naive 對齊。
+- 修改測試期未來數值不會改變訓練前處理統計或模型參數。
+- 時間序列 ZIP 解壓後，在新的 Python 子程序成功重新載入 model.joblib、預測並重訓。
+- 原有中英文文字／單位模型匯出後的新程序重載測試保持通過（jieba 已安裝）。
+- 真實 MCP STDIO：握手 → 列工具 → 匯入原始 CSV → 背景訓練 → 輪詢 → 讀取 ZIP resource。
+- 上傳原始檔及 ZIP 的 SHA256、一個工作資料夾僅一個服務、路徑越界拒絕、中斷／失敗狀態。
+
+GitHub CI 另在 Linux 固定依賴、Windows 中文及空白路徑安裝／MCP 設定、Cloud 最小依賴執行驗證。各次執行結果以 GitHub Actions 紀錄為準。
+
+仍需在使用者環境驗收：ChatGPT 桌面帳號新增連接、附件從對話轉入 Windows inbox、結果附回對話；本次雲端工作環境沒有這台 Windows 的存取權。Streamlit Community Cloud 的線上狀態也須獨立檢查，不以單元測試代替。
+
+---
+
 # Cloud 依賴安裝診斷與調整（2026-10-22）
 
 使用者回報 Streamlit Cloud 的 `preprocessing.py` 在 `import joblib` 時出現 `ModuleNotFoundError`。原 `requirements.txt` 確實宣告了 `joblib==1.5.3`，因此不能把缺少宣告當作根因。

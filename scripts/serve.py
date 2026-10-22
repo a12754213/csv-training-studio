@@ -1,6 +1,7 @@
 """Start a loopback-only Streamlit server and open the browser after readiness."""
 from __future__ import annotations
 import argparse
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -56,7 +57,7 @@ def main():
         sys.executable, "-m", "streamlit", "run", str(ROOT / "app.py"),
         "--server.address=127.0.0.1", f"--server.port={port}",
         "--server.headless=true", "--browser.gatherUsageStats=false",
-    ], cwd=ROOT)
+    ], cwd=ROOT, env={**os.environ, "CSV_STUDIO_LOCAL": "1"})
     stop = threading.Event()
     if not args.no_browser:
         threading.Thread(target=open_when_ready, args=(process, url, stop), daemon=True).start()

@@ -6,7 +6,8 @@ import json
 import joblib
 import pandas as pd
 from scipy import sparse
-from preprocessing import json_text, train_baseline
+from preprocessing import PreparedData, PrepConfig, json_text, train_baseline
+from automl import train_prepared
 
 
 def main():
@@ -26,8 +27,12 @@ def main():
                        for s in ("train", "test"))
     if config["task"] == "regression":
         y_train, y_test = pd.to_numeric(y_train), pd.to_numeric(y_test)
-    model, metrics, predictions = train_baseline(preprocessor, X_train, X_test, y_train, y_test,
-                                                config["task"], config["seed"])
+    raw_train, raw_test = (pd.read_csv(folder / f"raw_{s}.csv", dtype=str, keep_default_na=False)
+                           for s in ("train", "test"))
+    report = json.loads((folder / "report.json").read_text(encoding="utf-8"))
+    data = PreparedData(PrepConfig(**config), raw_train, raw_test, pd.DataFrame(),
+                        X_train, X_test, y_train, y_test, preprocessor, report)
+    model, metrics, predictions = train_prepared(data)
     joblib.dump(model, folder / "model.joblib")
     (folder / "metrics.json").write_text(json_text(metrics), encoding="utf-8")
     predictions.to_csv(folder / "test_predictions.csv", index=False, encoding="utf-8-sig")
