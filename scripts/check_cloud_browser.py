@@ -13,7 +13,7 @@ from playwright.sync_api import sync_playwright
 
 APP_URL = os.environ.get("APP_URL", "").strip()
 EXPECTED_HEADING = "把 CSV，整理成能訓練的資料。"
-ATTEMPTS = 5
+ATTEMPTS = 3
 
 
 def safe_location(url):
@@ -34,7 +34,7 @@ def main():
             try:
                 page.goto(APP_URL, wait_until="domcontentloaded", timeout=45000)
                 page.get_by_role("heading", name=EXPECTED_HEADING).wait_for(
-                    state="visible", timeout=55000
+                    state="visible", timeout=20000
                 )
             except Exception as exc:
                 # Avoid logging auth payloads or session tokens.
@@ -42,13 +42,19 @@ def main():
                     title = page.title()[:90]
                 except Exception:
                     title = "(unavailable)"
+                try:
+                    # Visible content, not page source/cookies/secret query strings.
+                    visible_text = " ".join(page.locator("body").inner_text(timeout=5000).split())[:600]
+                except Exception:
+                    visible_text = "(body text unavailable)"
+                print(f"VISIBLE PAGE TEXT: {visible_text!r}", flush=True)
                 print(
                     f"Not ready: {type(exc).__name__}; "
                     f"page={safe_location(page.url)}; title={title!r}",
                     flush=True,
                 )
                 if attempt < ATTEMPTS:
-                    time.sleep(12)
+                    time.sleep(6)
             else:
                 print(
                     "PASS: CSV Training Studio heading is visible in a real "
