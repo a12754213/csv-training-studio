@@ -11,9 +11,9 @@ permissions:
 jobs:
   check-cloud:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - name: Check live homepage and Streamlit health endpoint
+      - name: Inspect homepage and Streamlit health endpoint without redirect loops
         env:
           APP_URL: https://csv-training-studio-nz7xft3au8v8d6pcrjrnkd.streamlit.app
         run: |
@@ -21,28 +21,61 @@ jobs:
           import os
           import time
           import urllib.error
+          import urllib.parse
           import urllib.request
-
-          url = os.environ["APP_URL"].rstrip("/")
+          
+          
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, request, fp, code, msg, headers, newurl):
+                  return None
+          
+          
+          base = os.environ["APP_URL"].rstrip("/")
+          http = urllib.request.build_opener(NoRedirect)
+          failed = []
           for path in ("/_stcore/health", "/"):
-              for attempt in range(1, 19):
+              ok = False
+              for attempt in range(1, 7):
+                  url = base + path
+                  request = urllib.request.Request(
+                      url, headers={"User-Agent": "csv-training-studio-smoke-test/2.0"}
+                  )
                   try:
-                      request = urllib.request.Request(
-                          url + path,
-                          headers={"User-Agent": "csv-training-studio-smoke-test/1.0"},
-                      )
-                      with urllib.request.urlopen(request, timeout=18) as response:
-                          body = response.read(2048)
+                      with http.open(request, timeout=15) as response:
                           status = response.status
-                          content_type = response.headers.get("Content-Type", "")
-                      print(f"{path}: status={status} content-type={content_type} body={body[:120]!r}", flush=True)
-                      if status == 200 and (path != "/_stcore/health" or b"ok" in body.lower()):
-                          break
-                      raise RuntimeError("Unexpected response")
-                  except (urllib.error.URLError, TimeoutError, RuntimeError) as error:
-                      print(f"{path}: attempt={attempt} error={error}", flush=True)
-                      if attempt == 18:
-                          raise
-                      time.sleep(15)
+                          response_headers = response.headers
+                          body = response.read(256)
+                  except urllib.error.HTTPError as error:
+                      status = error.code
+                      response_headers = error.headers
+                      body = b""
+                  except (urllib.error.URLError, TimeoutError, OSError) as error:
+                      print(f"{path}: attempt={attempt} network_error={type(error).__name__}: {error}", flush=True)
+                      if attempt < 6:
+                          time.sleep(10)
+                      continue
+                  location = response_headers.get("Location", "")
+                  if location:
+                      redirect = urllib.parse.urlsplit(urllib.parse.urljoin(url, location))
+                      # Do not log query strings, which may contain OAuth state.
+                      safe_redirect = f"{redirect.scheme}://{redirect.netloc}{redirect.path}"
+                  else:
+                      safe_redirect = "-"
+                  print(
+                      f'{path}: attempt={attempt} HTTP={status} redirect_to={safe_redirect} '
+                      f'content_type={response_headers.get("Content-Type", "-")}', flush=True
+                  )
+                  if status == 200 and (path != "/_stcore/health" or body.strip().lower() == b"ok"):
+                      ok = True
+                      break
+                  if attempt < 6:
+                      time.sleep(10)
+              if not ok:
+                  failed.append(path)
+          if failed:
+              raise SystemExit(
+                  f'Cloud did not return HTTP 200 on: {", ".join(failed)}. '
+                  "Review redirects above and Streamlit Cloud deployment logs."
+              )
           print("Cloud HTTP smoke test passed.")
-          PY
+                    PY
