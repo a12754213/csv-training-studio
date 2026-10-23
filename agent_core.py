@@ -155,7 +155,7 @@ def propose_with_openai(instruction: str, api_key: str, *, has_upload: bool,
 
 
 def execute_read_plan(intent: dict[str, Any], registry: AgentRegistry, *,
-                      upload: bytes | None = None, filename: str = "upload.csv") -> dict[str, Any]:
+                      upload: bytes | None = None, filename: str = "upload.csv",\n                      user_approved: bool = False) -> dict[str, Any]:
     """Carry out approved bounded read tools, chaining their *actual* outputs.
 
     The UI calls this only after the user approves the proposed URL/read operation.
