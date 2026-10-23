@@ -92,7 +92,7 @@ if intent:
         if st.button("2 · 核准讀取來源並執行分析", type="primary"):
             try:
                 with st.spinner("受控執行工具中…"):
-                    read = execute_read_plan(intent, registry, upload=uploaded, filename=filename)
+                    read = execute_read_plan(intent, registry, upload=uploaded, filename=filename, user_approved=True)
                 st.session_state["core_read"] = read
                 st.session_state.pop("core_training", None)
             except (AgentCoreError, ValueError, RuntimeError, OSError, TypeError) as exc:
