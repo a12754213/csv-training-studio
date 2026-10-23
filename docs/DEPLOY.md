@@ -3,6 +3,21 @@
 GitHub 保存程式與歷史；Streamlit 主機執行 Python、處理 CSV、提供瀏覽器介面。
 GitHub Pages 不支援本專案所需的 Python 後端。
 
+## v2.3.1 版本同步與標題切邊檢查
+
+如果 GitHub 已經是 v2.3.1、但 Streamlit 網站左側「程式版本」仍為 v2.2.x，這是**公網部署與倉庫版本不同步**，不能直接歸因於程式碼或快取。請使用擁有 App 的 Streamlit 帳號：
+
+1. 到 [Streamlit Community Cloud](https://share.streamlit.io/) → 目前 App → **Manage app**。
+2. 確認 Repository 為 `a12754213/csv-training-studio`、分支 `main`、Main file path 為 `app.py`。
+3. 查看 **Logs**，確認是否偵測到最新 GitHub commit、安裝套件是否成功、是否有例外。
+4. 使用 **Reboot app** 重新啟動；必要時清除應用快取，再在瀏覽器強制重新整理。
+5. 開啟首頁，確認左側版本 `v2.3.1`、標題完整顯示、左側能找到 `AI Agent` 與 `AI Chat`。
+6. 再測試示範資料 → 整理 → 訓練 → ZIP 下載。若版本仍舊，檢查 GitHub 授權與 App 來源是否綁定另一個分支／repo，再依 Logs 排錯。
+
+GitHub 自動測試會先在 CI 本機 Chromium 驗證首頁桌機/手機版面的字體是否被裁切，以及兩個 Agent 頁面是否可以載入；接著檢查雲端公網顯示的版本。如果公網仍是舊版，CI 會顯示 `STALE DEPLOYMENT`，不會誤報成「程式碼測試未通過」。
+
+**重要限制**：把版本推送 GitHub 不等於已替你的 Streamlit Cloud 帳號按下 Reboot。本專案不能在沒有該平台授權的情況下直接操作後台。此測試也不代替實際用私人 CSV 或付費 API 完成操作驗收。
+
 ## 雲端套件安裝問題排查
 
 Cloud 偵測根目錄、與 `app.py` 同層的 `requirements.txt`，其中包含 `joblib==1.5.3`；本地安裝則使用 `requirements.lock.txt` 固定完整直接和間接相依。新加的 `cloud-dependencies` GitHub CI 工作會驗證在 Python 3.12 新環境安裝 Cloud 清單後可以匯入 `joblib` 和 `preprocessing`。
