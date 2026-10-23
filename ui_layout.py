@@ -15,6 +15,7 @@ AGENT_HEADING = "🤖 資料分析 Agent"
 CHAT_HEADING = "💬 自然語言工作台"
 CRAWLER_HEADING = "🌐 網頁資料擷取"
 ROUTER_HEADING = "🧭 Agent 工具自動分流"
+CORE_HEADING = "🧠 Agent Core 2.0"
 
 PAGE_CSS = """
 <style>
@@ -139,6 +140,10 @@ def render_hub_directory() -> None:
         (
             "🧭 Agent 工具分流", "pages/4_Agent_Router.py",
             "網址資料自動分流到表格或文字模組；不是全網搜尋。",
+        ),
+        (
+            "🧠 Agent Core 2.0", "pages/5_Agent_Core.py",
+            "用自然語言規劃多工具工作流，逐步核准、執行並取得結果。",
         ),
     ]
     for start in range(0, len(modules), 2):
