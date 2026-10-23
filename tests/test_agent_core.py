@@ -88,7 +88,7 @@ class AgentCoreTests(unittest.TestCase):
 
     def test_chained_web_table_tool_order_and_separate_training_approval(self):
         registry, calls = make_registry()
-        outcome = execute_read_plan(intent(), registry)
+        outcome = execute_read_plan(intent(), registry, user_approved=True)
         self.assertEqual([step["tool"] for step in outcome["trace"]],
                          ["web.crawl", "csv.inspect", "csv.plan"])
         self.assertEqual([name for name, _, _ in calls],
@@ -103,7 +103,7 @@ class AgentCoreTests(unittest.TestCase):
 
     def test_text_cannot_train_or_become_fake_csv(self):
         registry, calls = make_registry(kind="text")
-        outcome = execute_read_plan(intent(target=None, goal="inspect"), registry)
+        outcome = execute_read_plan(intent(target=None, goal="inspect"), registry, user_approved=True)
         self.assertEqual([step["tool"] for step in outcome["trace"]],
                          ["web.crawl", "text.inspect"])
         with self.assertRaises(AgentCoreError):
@@ -113,7 +113,7 @@ class AgentCoreTests(unittest.TestCase):
 
     def test_direct_csv_upload_and_unknown_target_fail_closed(self):
         registry, calls = make_registry()
-        result = execute_read_plan(intent(source="upload"), registry, upload=CSV)
+        result = execute_read_plan(intent(source="upload"), registry, upload=CSV, user_approved=True)
         self.assertEqual([s["tool"] for s in result["trace"]], ["csv.inspect", "csv.plan"])
         self.assertEqual(calls[0][1], CSV)
         with self.assertRaises(AgentCoreError):
@@ -144,9 +144,9 @@ class AgentCoreTests(unittest.TestCase):
     def test_cannot_use_tool_without_valid_source(self):
         registry, _ = make_registry()
         with self.assertRaises(AgentCoreError):
-            execute_read_plan({"source": "none"}, registry)
+            execute_read_plan({"source": "none"}, registry, user_approved=True)
         with self.assertRaises(AgentCoreError):
-            execute_read_plan({"source": "upload"}, registry)
+            execute_read_plan({"source": "upload"}, registry, user_approved=True)
 
 
 if __name__ == "__main__":
