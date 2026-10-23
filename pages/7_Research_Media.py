@@ -17,6 +17,56 @@ render_page_header(title="🔎 網路研究與多媒體工具", category="RESEAR
 st.info("各工具可獨立使用；搜尋需 Brave API Key，影像理解與音訊轉錄需 OpenAI API Key。"
         "不會自行外傳上傳檔案或訓練模型；公開網站仍須遵守擷取限制。")
 registry = build_registry()
+
+from agent_supervisor import plan_task, run_task, SupervisorError
+
+with st.expander("🤖 自然語言跨工具 Agent", expanded=True):
+    nl_text = st.text_area("直接用中文描述任務", key="nl_agent_query",
+                           placeholder="幫我搜尋近期 AI 新聞並分析前三個公開來源")
+    nl_file = st.file_uploader("附上 CSV／PDF／圖片／音訊／字幕（選填）",
+                              type=["csv", "tsv", "pdf", "png", "jpg", "jpeg", "webp",
+                                    "gif", "wav", "mp3", "mp4", "m4a", "webm", "srt", "vtt"],
+                              key="nl_agent_upload")
+    nl_bytes = nl_file.getvalue() if nl_file else None
+    nl_fp = hashlib.sha256(repr((nl_text, nl_file.name if nl_file else "",
+                                 hashlib.sha256(nl_bytes or b"").hexdigest())).encode()).hexdigest()
+    if st.session_state.get("nl_agent_fp") != nl_fp:
+        st.session_state["nl_agent_fp"] = nl_fp
+        st.session_state.pop("nl_agent_plan", None)
+        st.session_state.pop("nl_agent_result", None)
+    if st.button("解析指令並預覽工具", key="nl_agent_preview"):
+        try:
+            st.session_state["nl_agent_plan"] = plan_task(
+                nl_text, filename=nl_file.name if nl_file else "",
+                upload_present=nl_file is not None)
+        except SupervisorError as exc:
+            st.error(str(exc))
+    nl_plan = st.session_state.get("nl_agent_plan")
+    if nl_plan:
+        st.write("預計工具：", " → ".join(nl_plan.tools))
+        nl_brave = st.text_input("Brave API Key（搜尋用）", type="password", key="nl_brave")
+        nl_openai = st.text_input("OpenAI API Key（外部 AI 用）", type="password", key="nl_openai")
+        consent_read = st.checkbox("核准讀取資料或對外查詢", value=False, key="nl_read")
+        consent_follow = st.checkbox("允許自動讀取前三個公開搜尋結果", value=False, key="nl_follow")
+        consent_upload = st.checkbox("同意將圖片／音訊傳送給外部 OpenAI", value=False, key="nl_upload")
+        consent_report = st.checkbox("同意將擷取的公開文字片段送往 OpenAI 整理報告",
+                                     value=False, key="nl_report")
+        if st.button("核准並執行自然語言任務", disabled=not consent_read, type="primary"):
+            try:
+                with st.spinner("調度已註冊工具…"):
+                    result = run_task(nl_plan, registry, upload=nl_bytes,
+                                      filename=nl_file.name if nl_file else "",
+                                      brave_key=nl_brave, openai_key=nl_openai,
+                                      approved_read=consent_read, approved_follow=consent_follow,
+                                      approved_external_upload=consent_upload,
+                                      approved_report=consent_report)
+                st.session_state["nl_agent_result"] = result
+            except (SupervisorError, ValueError, PermissionError, RuntimeError, OSError) as exc:
+                st.error(f"任務未完成：{exc}")
+        if st.session_state.get("nl_agent_result"):
+            st.subheader("Agent 執行紀錄與結果")
+            st.json(st.session_state["nl_agent_result"])
+
 search_tab, media_tab, memory_tab = st.tabs(["網路搜尋與研究", "PDF／圖片／語音／影片", "本機記憶與排程"])
 
 with search_tab:
