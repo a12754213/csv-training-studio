@@ -74,7 +74,7 @@ def _destination(url: str):
         raise CrawlError("網址必須指向可公開存取的標準 HTTP(S) 網站，不能連到內網或本機。") from None
 
 
-def _get(url: str, *, max_redirects: int = MAX_REDIRECTS) -> tuple[str, bytes, str, int]:
+def _get(url: str, *, max_redirects: int = MAX_REDIRECTS, check_policy=None) -> tuple[str, bytes, str, int]:
     for redirects in range(max_redirects + 1):
         parsed, port, address = _destination(url)
         conn = (_PinnedHTTPS if parsed.scheme == "https" else _PinnedHTTP)(parsed.hostname, port, address)
@@ -96,12 +96,15 @@ def _get(url: str, *, max_redirects: int = MAX_REDIRECTS) -> tuple[str, bytes, s
                 next_url = urljoin(url, location)
                 if parsed.scheme == "https" and urlsplit(next_url).scheme == "http":
                     raise CrawlError("拒絕從 HTTPS 轉向不安全的 HTTP。")
+                # Check robots policy BEFORE requesting the redirected document.
+                if check_policy is not None and not check_policy(next_url):
+                    raise CrawlError("轉址後頁面不允許爬取。")
                 url = next_url
                 continue
             if status != 200:
                 return url, b"", "", status
             size = response.getheader("Content-Length")
-            if size and int(size) > MAX_BYTES:
+            if size and size.isdecimal() and int(size) > MAX_BYTES:
                 raise CrawlError("網頁超過 1.5 MB，請使用較小的公開頁面。")
             encoding = response.getheader("Content-Encoding", "identity").lower()
             if encoding not in ("identity", ""):
@@ -237,12 +240,9 @@ def crawl(context: AgentContext, params: dict) -> dict:
     _destination(url)
     if not _robots_allowed(url):
         raise CrawlError("網站 robots.txt 不允許抓取此網址。")
-    final_url, body, ctype, status = _get(url)
+    final_url, body, ctype, status = _get(url, check_policy=_robots_allowed)
     if status != 200:
         raise CrawlError(f"網站拒絕或找不到頁面（HTTP {status}）。")
-    # A redirect to a new host/path requires checking robots again.
-    if final_url != url and not _robots_allowed(final_url):
-        raise CrawlError("轉址後頁面不允許爬取。")
     if ctype in ("text/csv", "application/csv") or (
         urlsplit(final_url).path.lower().endswith(".csv") and ctype not in ("text/html", "application/xhtml+xml")
     ):
