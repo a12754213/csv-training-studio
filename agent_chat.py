@@ -146,7 +146,7 @@ def propose_with_openai(instruction: str, overview: dict[str, Any], api_key: str
     }, ensure_ascii=False)
     body = {
         'model': model, 'instructions': INSTRUCTIONS,
-        'input': prompt, 'max_output_tokens': 550,
+        'input': prompt, 'max_output_tokens': 900,
         'store': False,
         'text': {'format': {'type': 'json_schema', 'name': 'csv_agent_plan',
                             'strict': True, 'schema': SCHEMA}},
