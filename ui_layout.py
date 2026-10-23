@@ -146,6 +146,6 @@ def render_hub_directory() -> None:
         for col, (label, path, description) in zip((left, right), modules[start:start + 2]):
             with col:
                 with st.container(border=True):
-                    st.page_link(path, label=label, use_container_width=True)
+                    st.page_link(path, label=label)
                     st.caption(description)
     st.divider()
