@@ -7,14 +7,15 @@ import streamlit as st
 from agent_hub import AgentContext
 from agent_modules import build_registry
 from preprocessing import DataPreparationError
-from ui_layout import apply_page_layout
-from version import __version__
+from ui_layout import apply_page_layout, render_page_header, AGENT_HEADING
 
-st.set_page_config(page_title='AI Agent · CSV Training Studio', page_icon='🤖', layout='wide')
+st.set_page_config(page_title="資料分析 Agent · AI Agent Hub", page_icon='🤖', layout='wide')
 apply_page_layout()
-st.caption(f'CSV Training Studio · v{__version__}')
-st.title('🤖 AI Agent 工作台')
-st.caption('先分析 → 建議 → 由你確認預測目標 → 自動訓練 → 下載。使用既有訓練核心；不需額外 AI API Key。')
+render_page_header(
+    title=AGENT_HEADING,
+    category="CSV ANALYSIS",
+    description="上傳資料 → 檢查資料品質 → 建議模型 → 人工確認後訓練並下載。這個模組採規則型規劃，不需要 AI API Key。",
+)
 st.info('這是可解釋規則的自動工作流程，不是內建語言模型聊天。要透過 ChatGPT 對話控制本機訓練，請使用專案既有的 MCP 連接器。')
 
 registry = build_registry()
@@ -99,7 +100,7 @@ if task == 'time_series':
 
 if approved:
     try:
-        with st.spinner('執行原有 CSV Training Studio 訓練與評估流程…'):
+        with st.spinner('執行AI Agent Hub 的訓練與評估流程…'):
             result = registry.run('csv.train', context, request, approved=True)
         st.session_state['agent_result'] = {'digest': digest, 'options': request, 'output': result}
         st.success('模型訓練完成。')
