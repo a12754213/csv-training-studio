@@ -68,6 +68,37 @@ def video_info(ctx: AgentContext, params: dict) -> dict:
     }
 
 
+
+def youtube_transcript(ctx: AgentContext, params: dict) -> dict:
+    if set(params) - {"url", "languages"}:
+        raise VideoError("只接受 url 和 languages。")
+    vid = youtube_id(params.get("url", ""))
+    if os.environ.get("AI_AGENT_YOUTUBE_ENABLED") != "1":
+        raise VideoError("YouTube 字幕讀取預設停用，請在本機受控環境啟用。")
+    languages = params.get("languages", ["zh-Hant", "zh", "en"])
+    if (not isinstance(languages, list) or not 1 <= len(languages) <= 4 or
+            any(not isinstance(v, str) or not re.fullmatch(r"[A-Za-z-]{2,12}", v) for v in languages)):
+        raise VideoError("字幕語言格式錯誤。")
+    try:
+        from youtube_transcript_api import YouTubeTranscriptApi
+    except ImportError:
+        raise VideoError("請安裝選用的 youtube-transcript-api 套件。") from None
+    try:
+        fetched = YouTubeTranscriptApi().fetch(vid, languages=languages)
+        snippets = []
+        for item in fetched:
+            snippets.append({"start": round(float(item.start), 2),
+                             "text": str(item.text)[:300]})
+            if len(snippets) >= 300:
+                break
+    except Exception:
+        raise VideoError("這支影片目前無法透過公開字幕 API 取得字幕。") from None
+    return {"id": vid, "segments": snippets, "language": getattr(fetched, "language_code", ""),
+            "text": "\\n".join(x["text"] for x in snippets)[:28000],
+            "note": "這是公開字幕而非視覺畫面辨識；不能保證影片內容完全等於字幕。"}
+
 def register(registry: AgentRegistry) -> None:
     registry.register(Capability("video.youtube_info", "YouTube 公開影片資訊與字幕語言（選用）",
                                  video_info, requires_approval=True))
+    registry.register(Capability("video.youtube_transcript", "YouTube 公開字幕轉文字（選用）",
+                                 youtube_transcript, requires_approval=True))
