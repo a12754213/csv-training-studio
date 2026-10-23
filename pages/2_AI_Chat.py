@@ -10,8 +10,12 @@ from agent_chat import AgentChatError, DEFAULT_MODEL, propose_with_openai
 from agent_hub import AgentContext
 from agent_modules import build_registry
 from preprocessing import DataPreparationError
+from ui_layout import apply_page_layout
+from version import __version__
 
 st.set_page_config(page_title='AI Agent 對話 · CSV Training Studio', page_icon='💬', layout='wide')
+apply_page_layout()
+st.caption(f'CSV Training Studio · v{__version__}')
 st.title('💬 AI Agent · 自然語言助手')
 st.caption('上傳 CSV → 直接說明需求 → AI 提出建議 → 你審核 → 由既有訓練引擎執行。')
 st.info('這個網頁中的 AI 對話屬於可選的 OpenAI API 功能，API 獨立計費，不包含在 ChatGPT Plus 訂閱中。'
