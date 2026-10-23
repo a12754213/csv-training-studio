@@ -1,0 +1,40 @@
+name: CSV and Agent end-to-end acceptance
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  local-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install project and browser requirements
+        run: |
+          python -m pip install -r requirements.txt playwright==1.55.0
+          python -m playwright install --with-deps chromium
+      - name: Exercise real Streamlit CSV and Agent flows locally
+        run: python scripts/check_training_e2e.py
+  cloud-acceptance:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install project and browser requirements
+        run: |
+          python -m pip install -r requirements.txt playwright==1.55.0
+          python -m playwright install --with-deps chromium
+      - name: Exercise actual public CSV and Agent flows
+        env:
+          APP_URL: https://csv-training-studio-nz7xft3au8v8d6pcrjrnkd.streamlit.app/
+        run: python scripts/check_training_e2e.py
