@@ -9,6 +9,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 from version import __version__
+from ui_layout import apply_page_layout
 from automl import train_prepared
 
 from preprocessing import (
@@ -19,8 +20,9 @@ from preprocessing import (
 
 ROOT = Path(__file__).resolve().parent
 st.set_page_config(page_title="CSV Training Studio", page_icon="📊", layout="wide")
+apply_page_layout()
 st.markdown("""<style>
-.block-container{max-width:1280px;padding-top:2rem;padding-bottom:3rem;}
+
 [data-testid="stMetric"]{border:1px solid #d7e3df;border-radius:12px;padding:16px;background:rgba(128,160,150,.04);}
 .brand{font-size:12px;letter-spacing:2px;color:#16816d;font-weight:700;margin-bottom:8px;}
 .intro{color:#63716c;font-size:17px;line-height:1.7;margin-bottom:24px;}
