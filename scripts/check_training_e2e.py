@@ -23,12 +23,12 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLE = ROOT / "samples" / "demo_churn.csv"
-from ui_layout import HOME_HEADING, AGENT_HEADING, CHAT_HEADING
-HEADING = HOME_HEADING
 APP_URL = os.environ.get("APP_URL", "").strip()
 MAX_WAIT = 120000
 sys.path.insert(0, str(ROOT))
 from version import __version__
+from ui_layout import HOME_HEADING, AGENT_HEADING, CHAT_HEADING
+HEADING = HOME_HEADING
 
 
 def app_frame(page, heading, timeout=45):
