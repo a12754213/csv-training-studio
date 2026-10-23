@@ -91,6 +91,9 @@ def test_home_training(page, url, directory):
     frame.get_by_role("button", name="整理成訓練資料", exact=True).click()
     frame.get_by_role("tab", name="3 · 訓練與下載").click()
     frame.get_by_role("button", name="訓練並查看測試結果", exact=True).click(timeout=MAX_WAIT)
+    # Wait for the asynchronous Streamlit rerun to commit the trained model.
+    # Otherwise the packaging button may still see an older session_state.
+    frame.get_by_text("這次模型：", exact=False).first.wait_for(state="visible", timeout=MAX_WAIT)
     frame.get_by_role("button", name="產生可下載資料包", exact=True).click(timeout=MAX_WAIT)
     download_zip(page, frame, "下載 training_data.zip", directory)
     assert_clean(frame, "home training")
