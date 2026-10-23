@@ -29,9 +29,23 @@ class MCPChecks(unittest.TestCase):
                     await session.initialize()
                     tools = await session.list_tools()
                     self.assertIn('start_training', [t.name for t in tools.tools])
+                    self.assertIn('list_agent_capabilities', [t.name for t in tools.tools])
+                    self.assertIn('run_agent_read_tool', [t.name for t in tools.tools])
+                    catalog = await session.call_tool('list_agent_capabilities', {})
+                    self.assertFalse(catalog.isError, catalog)
+                    self.assertIn('csv.plan', [entry['name'] for entry in catalog.structuredContent['result']])
+
                     uploaded = await session.call_tool('import_csv', {'path': 'daily.csv'})
                     self.assertFalse(uploaded.isError, uploaded)
                     dataset = uploaded.structuredContent
+                    agent_report = await session.call_tool('run_agent_read_tool', {
+                        'dataset_id': dataset['dataset_id'], 'capability': 'csv.inspect'})
+                    self.assertFalse(agent_report.isError, agent_report)
+                    self.assertIn('日期', agent_report.structuredContent['columns'])
+                    denied_training = await session.call_tool('run_agent_read_tool', {
+                        'dataset_id': dataset['dataset_id'], 'capability': 'csv.train'})
+                    self.assertTrue(denied_training.isError)
+
                     plan = await session.call_tool('suggest_training_plan', {'dataset_id': dataset['dataset_id'],
                                                    'target': '銷量', 'forecast_intent': True})
                     self.assertFalse(plan.isError, plan)
