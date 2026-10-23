@@ -1,3 +1,10 @@
+# v2.4.0 · 2026-10-23
+
+- 把獨立網路爬蟲、文字分析與 Agent URL 工具分流加入同一套擴充式能力註冊中心。
+- 提供網頁文字和表格擷取、 CSV 訓練目標確認、GitHub/MCP 新工具與安全測試。
+- 保留 v2.3.1 的資料清理、模型訓練、下載以及 AI Chat。
+- 網址變更時清除舊結果；未支援影片及遞迴爬取，不能稱作完全自主瀏覽。
+
 # v2.3.1 · 2026-10-23
 
 - 修正首頁、AI Agent、AI Chat 固定工具列擋住第一個標題的版面問題；統一響應式 CSS 與行動裝置 safe-area。
@@ -60,3 +67,11 @@
 ## 2.0.0 — 原始上傳版本
 
 保留使用者提供的完整專案，含中文／英文斷詞、TF-IDF、單位拆分與訓練流程。
+
+
+## Unreleased · Modular Web Agent
+
+- Independent web crawler and text inspection modules registered in Agent Hub.
+- Standalone Streamlit crawler and tool router pages with explicit training approval.
+- Public URL and robots.txt checks, size limits and MCP table import.
+- Dedicated unit tests.

@@ -19,7 +19,8 @@ class PageLayoutChecks(unittest.TestCase):
         self.assertIn('overflow-wrap: anywhere', PAGE_CSS)
 
     def test_all_three_pages_render_without_exception(self):
-        for filename in ('app.py', 'pages/1_AI_Agent.py', 'pages/2_AI_Chat.py'):
+        for filename in ('app.py', 'pages/1_AI_Agent.py', 'pages/2_AI_Chat.py',
+                         'pages/3_Web_Crawler.py', 'pages/4_Agent_Router.py'):
             with self.subTest(page=filename):
                 app = AppTest.from_file(str(ROOT / filename), default_timeout=30).run()
                 self.assertFalse(app.exception)

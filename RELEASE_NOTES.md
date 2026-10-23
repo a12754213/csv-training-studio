@@ -1,14 +1,19 @@
-# CSV Training Studio v2.3.1
+# AI Agent Hub · CSV Training Studio v2.4.0
 
-這次是 v2.3.0 AI Agent 的介面與部署維護更新，原始 CSV 訓練核心保持不變。
+此版本延續 v2.3.1 的 CSV/AutoML/AI Chat/MCP 系統，加入**獨立網路工具**，而不是把所有功能塞進 CSV。
 
-- **修正頁首遮擋**：首頁與「AI Agent / AI Chat」全面共用安全間距 CSS，支援狹窄螢幕及 iOS safe-area；放大中文字標題行高，避免頂端被 Streamlit 固定工具列蓋住。
-- **完善驗收**：Cloud GitHub Actions 在 Chromium 啟動本地 Streamlit，檢查桌機／手機寬度的大標題位置、兩個 Agent 頁面導覽，接著檢查實際公網版本。
-- **辨識過期部署**：若 Cloud 公網仍為 v2.2.x 或 v2.3.0，明確回報「STALE DEPLOYMENT」，不再誤稱整個 UI 無法開啟。
-- **補齊測試**：包含各頁可渲染與版面 CSS 迴歸測試。
-- **保留全部功能**：原本的 CSV 分析、TF-IDF、AutoML、時間序列、可選自然語言 AI Chat、本機 MCP 均保留。
+## 本次新增
+- **網路爬蟲**獨立頁面：人工確認後擷取單頁公開 HTML/CSV，顯示文章文字、表格資料並支援匯出 CSV。
+- **AI Agent 自動工具分流**獨立頁面：讀到表格時交由 `csv.inspect`，指定目標後可 `csv.plan`，經使用者再次同意才能 `csv.train`；文章則送至 `text.inspect`。
+- **MCP 新工具**：`inspect_public_web` 與 `import_public_web_table`，供有連接的 ChatGPT Agent 使用。
+- **安全邊界**：公開 HTTP(S)、DNS/IP 檢查與連線目標鎖定、尊重 robots.txt、拒絕登入/內網/自訂連接埠、限制轉址與擷取容量，不執行網頁中的指令。
+- **測試覆蓋**：增加獨立爬蟲及路由測試；保留 CSV 上傳→訓練→ZIP 的端到端測試。修改網址會清除舊結果，避免錯認來源。
 
-**雲端注意事項：** GitHub CI／本地瀏覽器通過不表示 Streamlit Cloud 已自動部署。若雲端網站仍顯示舊版，
-需由 Streamlit Cloud 帳號在 Manage app 確認分支 `main`、入口 `app.py` 並查看 Logs／Reboot。詳細操作請見 `docs/DEPLOY.md`。
+## 暫不支援
+這次的「Agent 自動分流」是**規則型**，尚不是能自行搜尋全網的 LLM Agent。
+目前沒有多頁遞迴爬取、JavaScript 動態頁面、YouTube 字幕、影片下載、無字幕音訊轉錄、影像辨識、登入及反爬繞過。這些應以**獨立模組**逐步開發、驗收。
+ChatGPT Plus 並不包含網站內額外 OpenAI API 使用額度；本機 MCP 客戶端也必須由使用者實際連接。
 
-本機 MCP 的自動化測試不等於使用者自己的 ChatGPT 客戶端已連接。連接步驟仍在 `docs/CHATGPT_LOCAL.md`。
+若你的正式網站還是舊版，請檢查 Streamlit Cloud 指向 `main`／`app.py`，並從 Manage app 查看 Logs、重新啟動。
+
+詳細說明請見 `docs/AI_AGENT.md`。
