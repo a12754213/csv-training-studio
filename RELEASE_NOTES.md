@@ -1,3 +1,15 @@
+# AI Agent Hub v3.0.0 — Adaptive Agent Core
+
+- 新增第七個獨立頁面「Agent Core 3.0」：依上一步的網頁擷取結果，從固定已註冊工具中選擇下個步驟；最多三個來源，每次最多 12 步。
+- 任務狀態與工具 trace、至多一次重試（最多兩次失敗）；可選擇使用 OpenAI 逐步提供候選動作，但結果仍經由當前狀態 allow-list 驗證。
+- 可選擇將不含原始 CSV、網址 query、金鑰的工作狀態輸出至 JSON Journal。會話內保存當次輸入，斷線後不會自動重播外部存取。
+- 新增 opt-in 的唯讀 Streamable HTTP MCP Adapter。預設 localhost 綁定，Bearer Token 驗證，沒有模型訓練和本機檔案存取權限；公網 TLS、反向代理及 ChatGPT 連接需要使用者另外設定與驗收。
+- 保留 v2.6.0 全部 CSV、AutoML、網頁擷取與 Core 2.0 功能。
+
+注意：本版尚未提供搜尋引擎、JS 動態網頁／影片、跨 session 自動恢復、無限制自主執行或已綁定至 ChatGPT 網頁版的遠端工具。OpenAI API 獨立計費。
+
+---
+
 # AI Agent Hub v2.6.0 — Agent Core 2.0
 
 新增受控多工具 Agent Core 工作台（pages/5_Agent_Core.py）：使用自然語言規劃，先預覽來源與工具，再分開核准外部讀取和模型訓練。
