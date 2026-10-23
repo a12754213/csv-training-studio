@@ -94,7 +94,7 @@ def youtube_transcript(ctx: AgentContext, params: dict) -> dict:
     except Exception:
         raise VideoError("這支影片目前無法透過公開字幕 API 取得字幕。") from None
     return {"id": vid, "segments": snippets, "language": getattr(fetched, "language_code", ""),
-            "text": "\\n".join(x["text"] for x in snippets)[:28000],
+            "text": "\n".join(x["text"] for x in snippets)[:28000],
             "note": "這是公開字幕而非視覺畫面辨識；不能保證影片內容完全等於字幕。"}
 
 def register(registry: AgentRegistry) -> None:
