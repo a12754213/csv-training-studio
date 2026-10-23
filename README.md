@@ -1,4 +1,4 @@
-# CSV Training Studio · v2.2.0
+# CSV Training Studio · v2.3.0
 
 把含數值、類別、評論文字與單位的 CSV 整理為可訓練的稀疏特徵，並保留相同規則處理新資料。
 
