@@ -3,6 +3,7 @@ name: Streamlit Cloud browser smoke check
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -26,6 +27,7 @@ jobs:
       - name: Check local desktop/mobile heading and Agent pages in Chromium
         run: python scripts/check_local_ui_browser.py
       - name: Load public Streamlit app in Chromium and assert UI heading
+        if: github.event_name != 'pull_request'
         env:
           APP_URL: https://csv-training-studio-nz7xft3au8v8d6pcrjrnkd.streamlit.app/
         run: python scripts/check_cloud_browser.py
