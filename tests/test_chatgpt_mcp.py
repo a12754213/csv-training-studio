@@ -31,6 +31,8 @@ class MCPChecks(unittest.TestCase):
                     self.assertIn('start_training', [t.name for t in tools.tools])
                     self.assertIn('list_agent_capabilities', [t.name for t in tools.tools])
                     self.assertIn('run_agent_read_tool', [t.name for t in tools.tools])
+                    self.assertIn('inspect_public_web', [t.name for t in tools.tools])
+                    self.assertIn('import_public_web_table', [t.name for t in tools.tools])
                     catalog = await session.call_tool('list_agent_capabilities', {})
                     self.assertFalse(catalog.isError, catalog)
                     self.assertIn('csv.plan', [entry['name'] for entry in catalog.structuredContent['result']])
