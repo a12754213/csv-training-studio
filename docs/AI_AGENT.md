@@ -78,3 +78,24 @@ ID、任務類型與模型選擇只是建議；業務目的、資料洩漏與預
 - 自然語言助手不保證理解所有模糊業務需求；資料洩漏、訓練／測試資料重疊仍須人工核對。
 - 此版本只會呼叫外部 API 來理解意圖，**訓練、補值、斷詞、分割與評估仍在 Streamlit 主機上執行**。
 - 本機測試：`python -m unittest tests.test_agent_chat` 或 `python -m unittest discover -s tests -v`。網路/API 真實使用需另外提供你自己的 API Key 驗收。
+
+
+## 獨立網路爬蟲與多工具 Agent Router
+
+目前有兩個額外頁面，與原始首頁／CSV Training / AI Agent 工作台完全分離：
+
+- **網路爬蟲**（pages/3_Web_Crawler.py）：貼上公開 URL，人工核准抓取，提供文章文字預覽或 HTML/CSV 表格下載。
+- **Agent 自動分流**（pages/4_Agent_Router.py）：貼上公開 URL，自動依結果呼叫 web.crawl → csv.inspect / csv.plan，或 web.crawl → text.inspect。模型訓練需指定目標欄並按下核准按鈕。
+
+模組：
+
+- agent_modules/web_crawler.py：單頁網路擷取，僅支援 HTTP(S) 預設連接埠，逐次 DNS/IP 檢查並鎖定公開 IP，尊重 robots.txt 和每次轉址，避免 SSRF；限 1.5 MB、最多 3 次轉址、表格 1,000 列、32 欄。
+- agent_modules/text_workflow.py：獨立文字擷取概況（不是 LLM 摘要）。
+- agent_router.py：判斷資料型態，呼叫已註冊能力，不支援任意 Python 指令。
+- agent_modules/__init__.py：明確載入允許能力，後續模組可依既有架構註冊。
+
+本地 MCP 可使用 inspect_public_web(url, target='') 分流、import_public_web_table(url) 把表格匯入資料庫。這些工具會產生外部網路存取，需在使用的 Agent／MCP 用戶端確認授權；訓練仍另由 start_training 執行。
+
+第一版沒有搜尋引擎、網站登入、JavaScript 渲染、PDF/影片下載、跨頁爬取或文章事實查核；不繞過擋爬／付費牆。網站連線是否可用由部署環境和網站決定。網頁資料是不可信內容，不能當 Agent 指令。
+
+驗證：python -m unittest tests.test_web_crawler tests.test_agent_hub tests.test_ui_layout -v；既有測試由 CI 驗證。
