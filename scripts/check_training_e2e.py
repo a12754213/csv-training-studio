@@ -79,27 +79,14 @@ def download_zip(page, frame, label, directory):
 
 def click_selectbox_option(frame, label, option):
     control = frame.get_by_role("combobox", name=label)
-    print("SELECT INPUT BEFORE", control.evaluate(
-        "(el) => el.parentElement?.parentElement?.outerHTML.slice(0, 2800)"), flush=True)
+    # Streamlit 1.66 uses a React-Aria searchable combobox, not BaseWeb.
+    # Enter alone does not commit the filtered option; ArrowDown then Enter does.
     control.click(timeout=20000)
-    frame.wait_for_timeout(350)
-    print("SELECTBOX DEBUG", {
-        "value": control.input_value(),
-        "input_html": control.evaluate("(el) => el.outerHTML.slice(0, 800)"),
-        "popover": frame.locator('[data-baseweb="popover"]').all_text_contents()[:3],
-        "listbox": frame.locator('[role="listbox"]').all_text_contents()[:3],
-        "menu": frame.locator('[data-baseweb="menu"]').all_text_contents()[:3],
-        "text_matches": frame.get_by_text(option, exact=True).count(),
-    }, flush=True)
-    # Use the open dropdown rather than hidden grid cells.
-    choices = frame.locator('[data-baseweb="popover"]').get_by_text(option, exact=True)
-    if choices.count():
-        choices.last.click(timeout=8000)
-    else:
-        control.fill(option, timeout=10000)
-        control.press("ArrowDown", timeout=10000)
-        control.press("Enter", timeout=10000)
-    print("SELECTBOX AFTER", control.input_value(), flush=True)
+    control.fill(option, timeout=20000)
+    control.press("ArrowDown", timeout=20000)
+    control.press("Enter", timeout=20000)
+    if control.input_value() != option:
+        raise AssertionError(f"Could not select target option in {label}")
 
 
 def test_home_training(page, url, directory):
