@@ -42,7 +42,9 @@ def plan_task(instruction: str, *, filename: str = "", upload_present: bool = Fa
         elif name.endswith(".pdf"):
             kind, tools = "pdf", ("document.pdf",)
         elif name.endswith((".png", ".jpg", ".jpeg", ".webp", ".gif")):
-            kind, tools = "image", ("image.inspect",)
+            semantic = any(w in instruction.lower() for w in ("辨識", "描述", "內容", "vision", "describe"))
+            kind, tools = "image", (("image.describe",) if semantic and not name.endswith(".gif")
+                                    else ("image.inspect",))
         elif name.endswith((".srt", ".vtt")):
             kind, tools = "subtitles", ("video.subtitles",)
         elif name.endswith((".wav", ".mp3", ".mp4", ".m4a", ".webm")):
@@ -50,7 +52,7 @@ def plan_task(instruction: str, *, filename: str = "", upload_present: bool = Fa
         else:
             raise SupervisorError("檔案格式目前沒有可用的處理工具。")
         return TaskPlan(kind, instruction, tools, filename=filename,
-                        requires_external=kind == "audio")
+                        requires_external=tools[0] in ("image.describe", "audio.transcribe"))
     if urls:
         if len(urls) == 1:
             try:
@@ -65,6 +67,8 @@ def plan_task(instruction: str, *, filename: str = "", upload_present: bool = Fa
         if any(urlsplit(u).scheme not in ("http", "https") for u in urls):
             raise SupervisorError("只接受 HTTP(S) 網址。")
         return TaskPlan("web", instruction, ("web.research_selected",), urls=tuple(urls))
+    if len(instruction.strip()) > 300:
+        raise SupervisorError("搜尋任務請縮短至 300 字以內。")
     return TaskPlan("search", instruction, ("web.search", "web.research_selected"))
 
 
@@ -106,9 +110,9 @@ def run_task(plan: TaskPlan, registry: AgentRegistry, *,
         if upload is None or not upload:
             raise SupervisorError("任務預期的檔案不存在。")
         tool = plan.tools[0]
-        if tool == "audio.transcribe" and not approved_external_upload:
-            raise PermissionError("音訊轉錄必須另行核准將檔案傳給 OpenAI。")
-        params = {"api_key": openai_key} if tool == "audio.transcribe" else {}
+        if tool in ("audio.transcribe", "image.describe") and not approved_external_upload:
+            raise PermissionError("外部視覺／音訊模型必須另行核准將檔案傳給 OpenAI。")
+        params = {"api_key": openai_key} if tool in ("audio.transcribe", "image.describe") else {}
         audit.append(tool)
         data = registry.run(tool, ctx, params, approved=approved_external_upload)
     if approved_report and openai_key:
