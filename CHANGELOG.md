@@ -1,3 +1,10 @@
+# v2.3.1 · 2026-10-23
+
+- 修正首頁、AI Agent、AI Chat 固定工具列擋住第一個標題的版面問題；統一響應式 CSS 與行動裝置 safe-area。
+- 在 Cloud smoke 加入本地真實 Chromium 桌面／手機版面及 Agent 頁面測試。
+- Cloud 部署檢查明確辨識舊版與缺少的 Agent 導覽，避免誤判成應用程式無法使用。
+- 訓練核心、模型結果與 API/MCP 的既有行為維持不變。
+
 # v2.3.0 · 2026-10-23
 
 - 新增可擴充 AgentRegistry、CSV 工作模組、Streamlit AI Agent 工作台。
