@@ -67,7 +67,7 @@ def main():
                         "and reboot/redeploy in Streamlit Cloud dashboard.")
                 app.get_by_text(f"AI Agent Hub · 程式版本 v{__version__}", exact=True).wait_for(
                     state="visible", timeout=15000)
-                for section in ("AI Agent", "AI Chat", "Web Crawler", "Agent Router", "Agent Core", "Agent Core 3"):
+                for section in ("AI Agent", "AI Chat", "Web Crawler", "Agent Router", "Agent Core", "Agent Core 3", "Research"):
                     # Multipage navigation may be collapsed on narrow screens.
                     # Check the sidebar link text on the desktop smoke viewport.
                     if app.get_by_text(section, exact=True).count() == 0:
