@@ -1,3 +1,10 @@
+# v2.3.0 · 2026-10-23
+
+- 新增可擴充 AgentRegistry、CSV 工作模組、Streamlit AI Agent 工作台。
+- 新增可選 OpenAI API 自然語言對話頁、僅傳欄位摘要的結構化意圖規劃、使用者審核訓練門檻。
+- ChatGPT 本機 MCP 提供註冊能力清單與受控唯讀工具；保留原本訓練工作佇列。
+- 新增 Agent、MCP 與安全測試，不修改模型訓練核心或依賴。
+
 # v2.2.0 · 2026-10-22
 
 - 加入 AutoML 內層驗證選模、Agent 任務建議、本機 TensorFlow LSTM 與 .keras 匯出。

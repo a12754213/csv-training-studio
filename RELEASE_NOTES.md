@@ -1,14 +1,14 @@
-# CSV Training Studio v2.2.0
+# CSV Training Studio v2.3.0
 
-新增可見的訓練特徵排除、真正的時間序列預測及 ChatGPT 本機訓練介面。
+新增可以持續擴充的 AI Agent 註冊中心、獨立資料分析工作台，以及**可選的自然語言對話**。
 
-- 表格：多選不參與訓練的欄位，輸出採用／排除紀錄；排除欄不再是模型輸入。
-- 時間序列：歷史視窗 + Ridge／Random Forest，嚴格時間交界、Naive 比較、模型與預測匯出。提供本機選用 LSTM 與 .keras 匯出；尚未提供 GRU。
-- ChatGPT：SETUP_CHATGPT.bat 安裝本機 MCP 依賴並產生設定；需在支援本機工具的客戶端完成一次連接。雲端對話無法自動讀取 Windows Python 或本機路徑。
-- 本機網頁可以查看並下載 ChatGPT 工作結果；自動化與網頁共用訓練核心。
+- Streamlit 左側 **AI Agent**：不使用外部 API，直接上傳 CSV，查看概況、確認目標與特徵排除，再沿用既有核心完成訓練。
+- Streamlit 左側 **AI Chat**：可自行提供 OpenAI API Key，說明「幫我預測是否流失，排除客戶編號」。語言模型提出工作計畫，**必須由使用者再次核准**才會實際訓練。
+- 自然語言請求只傳送使用者指令、欄位名稱、推測型態、缺值率和列數等摘要，不上傳原始 CSV 列資料或模型。請注意欄名本身仍可能敏感。
+- Agent 工具註冊採明確白名單；未知工具、目標、切分欄不能直接執行。模型選擇、前處理、評估、訓練 ZIP 仍沿用 v2.2.0 核心。
+- 本機 ChatGPT MCP 增加 `list_agent_capabilities`、`run_agent_read_tool`；自然語言 ChatGPT 端仍須另行完成 MCP 連接。
+- OpenAI API 單獨計費，不包含在 ChatGPT Plus 方案。**無 API Key**仍可用 AI Agent 工作台與原本全部 CSV 功能。
+- 新增安全、結構化輸出與 MCP 整合測試。
 
-使用 START_WINDOWS.bat 開啟本機網頁；時間序列見 docs/TIME_SERIES.md，對話流程見 docs/CHATGPT_LOCAL.md。
-完整測試說明見 VALIDATION.md。GitHub Release 由 CI 通過後自動產生；雲端站台操作和使用者本機 ChatGPT 連線需分別驗收。
-
-- AutoML：比較有限候選模型，使用內層驗證挑選，測試集最後才評估。MCP 提供任務與特徵建議工具。
-- 本機 LSTM：執行 SETUP_LSTM.bat；時間驗證 EarlyStopping、最佳輪數重訓、獨立模型重載。Windows 原生安裝預設 CPU，GPU 需 WSL2。
+教學見 `docs/AI_AGENT.md`、`docs/CHATGPT_LOCAL.md`。本次變更不新增第三方套件。
+GitHub CI 通過後自動產生可下載版本；雲端網站能否實際完成對話需用使用者自己的 API Key 另外驗收。
