@@ -50,7 +50,7 @@ def render(context: AgentContext, params: dict) -> dict:
         counter["requests"] += 1
         try:
             _destination(target)
-            final, data, mime, code = _get(target, check_policy=_robots_allowed)
+            final, data, mime, code = _get(\n                target, check_policy=lambda u: urlsplit(u).hostname == host and _robots_allowed(u))
             if urlsplit(final).hostname != host or counter["bytes"] + len(data) > MAX_TOTAL_BYTES:
                 route.abort()
                 return
@@ -66,10 +66,14 @@ def render(context: AgentContext, params: dict) -> dict:
             ctx = browser.new_context(service_workers="block", accept_downloads=False)
             ctx.route("**/*", serve)
             page = ctx.new_page()
-            page.add_init_script("""() => {
-                window.WebSocket = class { constructor() { throw new Error('blocked'); } };
-                window.EventSource = class { constructor() { throw new Error('blocked'); } };
-            }""")
+            page.add_init_script("""
+                for (const name of ['WebSocket', 'EventSource', 'Worker', 'SharedWorker']) {
+                    Object.defineProperty(window, name, {
+                        configurable: false,
+                        value: class { constructor() { throw new Error('disabled in isolated browser'); } }
+                    });
+                }
+            """)
             try:
                 page.goto(url, wait_until="domcontentloaded", timeout=14000)
                 page.wait_for_timeout(900)
