@@ -30,6 +30,7 @@ with search_tab:
         st.session_state["research_query_signature"] = fingerprint
         st.session_state.pop("research_search", None)
         st.session_state.pop("research_sources", None)
+        st.session_state.pop("research_report", None)
     if st.button("核准查詢網路搜尋索引", type="primary"):
         try:
             with st.spinner("呼叫公開網路搜尋 API…"):
@@ -38,6 +39,7 @@ with search_tab:
                     "freshness": freshness_code}, approved=True)
             st.session_state["research_search"] = answer
             st.session_state.pop("research_sources", None)
+            st.session_state.pop("research_report", None)
         except (ValueError, RuntimeError, OSError) as exc:
             st.error(str(exc))
     search_result = st.session_state.get("research_search")
@@ -56,6 +58,7 @@ with search_tab:
                     reviewed = registry.run("web.research_selected", AgentContext(),
                                             {"urls": actual_urls}, approved=True)
                 st.session_state["research_sources"] = reviewed
+                st.session_state.pop("research_report", None)
             except (ValueError, RuntimeError, OSError) as exc:
                 st.error(str(exc))
         if st.session_state.get("research_sources"):
@@ -68,7 +71,26 @@ with search_tab:
                         st.text(item["text_preview"])
                         if item["kind"] == "table":
                             st.caption(f"表格：{item['rows']} 列、{item['columns']} 欄")
-            st.caption("目前輸出是逐來源擷取與摘要預覽，不是跨網站真偽鑑定。")
+            st.caption("來源已分別列出，內容不代表已查證。")
+            api_key_report = st.text_input("OpenAI API Key（來源報告，選填）",
+                                            type="password", key="research_synthesis_key")
+            consent_report = st.checkbox("我同意將上方已擷取的來源文字片段傳給 OpenAI 整理研究報告",
+                                         value=False, key="research_synthesis_consent")
+            if st.button("核准產生有來源標記的研究報告", disabled=not consent_report):
+                try:
+                    with st.spinner("綜合已核准的網頁文字…"):
+                        report = registry.run("web.synthesize", AgentContext(), {
+                            "query": query, "sources": st.session_state["research_sources"]["sources"],
+                            "api_key": api_key_report}, approved=True)
+                    st.session_state["research_report"] = report
+                except (ValueError, RuntimeError, OSError) as exc:
+                    st.error(str(exc))
+            if st.session_state.get("research_report"):
+                summary = st.session_state["research_report"]
+                st.markdown(summary["report"])
+                for source in summary["sources"]:
+                    st.markdown(f"[{source['index']}] {source['url']}")
+                st.caption(summary["warning"])
 
 with media_tab:
     st.subheader("讀取本機檔案")
@@ -110,7 +132,8 @@ with media_tab:
             except (ValueError, RuntimeError, OSError) as exc:
                 st.error(str(exc))
         previous = st.session_state.get("agent_media_result")
-        if previous and previous["file_id"] == hashlib.sha256(uploaded.getvalue()).hexdigest():
+        if (previous and previous["file_id"] == hashlib.sha256(uploaded.getvalue()).hexdigest()
+                and previous["tool"] == chosen):
             st.subheader("分析結果")
             st.json(previous["data"])
     st.divider()
@@ -121,6 +144,24 @@ with media_tab:
         try:
             info = registry.run("video.youtube_info", AgentContext(), {"url": video_url}, approved=True)
             st.json(info)
+        except (ValueError, RuntimeError, OSError) as exc:
+            st.error(str(exc))
+    if st.button("核准讀取 YouTube 公開字幕", type="secondary"):
+        try:
+            transcript = registry.run("video.youtube_transcript", AgentContext(),
+                                      {"url": video_url}, approved=True)
+            st.text_area("影片字幕", transcript["text"], height=180)
+            st.caption(transcript["note"])
+        except (ValueError, RuntimeError, OSError) as exc:
+            st.error(str(exc))
+    st.divider()
+    st.subheader("隔離瀏覽器：動態網頁")
+    js_url = st.text_input("需 JavaScript 的公開網頁網址", key="js_url")
+    if st.button("核准使用隔離 Playwright 擷取網頁", type="secondary"):
+        try:
+            result = registry.run("web.render", AgentContext(),
+                                  {"url": js_url}, approved=True)
+            st.json(result)
         except (ValueError, RuntimeError, OSError) as exc:
             st.error(str(exc))
 
