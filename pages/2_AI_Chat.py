@@ -75,7 +75,7 @@ if text:
             elif suggestion['action'] == 'plan':
                 plan = registry.run('csv.plan', context, {
                     'target': suggestion['target'],
-                    'time_column': suggestion['time_column'],
+                    'time_column': suggestion['time_column'] if suggestion['task'] == 'time_series' else None,
                     'forecast_intent': suggestion['task'] == 'time_series',
                 })
                 if 'suggested_options' not in plan:
