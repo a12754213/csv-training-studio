@@ -57,7 +57,7 @@ def main():
                 # Detect an old deployed build explicitly instead of reporting
                 # that the UI itself is missing (the v2.2.0 page was visible).
                 visible_version = re.search(
-                    r"程式版本 v([0-9]+\\.[0-9]+\\.[0-9]+)",
+                    r"程式版本 v([0-9]+\.[0-9]+\.[0-9]+)",
                     app.locator("body").inner_text(timeout=15000))
                 if visible_version and visible_version.group(1) != __version__:
                     raise RuntimeError(
