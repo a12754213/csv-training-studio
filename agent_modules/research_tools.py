@@ -13,6 +13,12 @@ from agent_hub import AgentContext, AgentRegistry, Capability
 from agent_modules.web_crawler import _destination
 
 BRAVE_ENDPOINT = "https://api.search.brave.com/res/v1/web/search"
+
+class _NoRedirect(request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise ResearchError("搜尋服務重新導向已拒絕，以保護 API 金鑰。")
+
+
 MAX_QUERY_LENGTH = 300
 
 
@@ -43,7 +49,7 @@ def search(context: AgentContext, params: dict) -> dict:
         headers={"Accept": "application/json", "X-Subscription-Token": token.strip()},
     )
     try:
-        with request.urlopen(req, timeout=12) as response:
+        with request.build_opener(_NoRedirect()).open(req, timeout=12) as response:
             raw = response.read(250_001)
     except error.HTTPError as exc:
         if exc.code in (401, 403):
