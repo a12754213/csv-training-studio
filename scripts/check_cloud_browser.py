@@ -17,7 +17,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from version import __version__
 
 APP_URL = os.environ.get("APP_URL", "").strip()
-EXPECTED_HEADING = "把 CSV，整理成能訓練的資料。"
+from ui_layout import HOME_HEADING
+EXPECTED_HEADING = HOME_HEADING
 ATTEMPTS = 3
 
 
@@ -57,14 +58,14 @@ def main():
                 # Detect an old deployed build explicitly instead of reporting
                 # that the UI itself is missing (the v2.2.0 page was visible).
                 visible_version = re.search(
-                    r"程式版本 v([0-9]+\.[0-9]+\.[0-9]+)",
+                    r"AI Agent Hub · 程式版本 v([0-9]+\.[0-9]+\.[0-9]+)",
                     app.locator("body").inner_text(timeout=15000))
                 if visible_version and visible_version.group(1) != __version__:
                     raise RuntimeError(
                         f"STALE DEPLOYMENT: Cloud serves v{visible_version.group(1)} "
                         f"but GitHub source expects v{__version__}; check main/app.py "
                         "and reboot/redeploy in Streamlit Cloud dashboard.")
-                app.get_by_text(f"程式版本 v{__version__}", exact=True).wait_for(
+                app.get_by_text(f"AI Agent Hub · 程式版本 v{__version__}", exact=True).wait_for(
                     state="visible", timeout=15000)
                 for section in ("AI Agent", "AI Chat", "Web Crawler", "Agent Router"):
                     # Multipage navigation may be collapsed on narrow screens.
@@ -109,7 +110,7 @@ def main():
                     time.sleep(6)
             else:
                 print(
-                    f"PASS: CSV Training Studio v{__version__}, feature exclusions "
+                    f"PASS: AI Agent Hub v{__version__}, feature exclusions "
                     "and preparation control are visible without app exceptions "
                     f"at {safe_location(page.url)}",
                     flush=True,
