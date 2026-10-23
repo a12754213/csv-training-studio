@@ -60,3 +60,11 @@
 ## 2.0.0 — 原始上傳版本
 
 保留使用者提供的完整專案，含中文／英文斷詞、TF-IDF、單位拆分與訓練流程。
+
+
+## Unreleased · Modular Web Agent
+
+- Independent web crawler and text inspection modules registered in Agent Hub.
+- Standalone Streamlit crawler and tool router pages with explicit training approval.
+- Public URL and robots.txt checks, size limits and MCP table import.
+- Dedicated unit tests.
