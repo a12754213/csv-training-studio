@@ -20,10 +20,11 @@ class PageLayoutChecks(unittest.TestCase):
         self.assertEqual(PRODUCT_NAME, "AI Agent Hub")
         self.assertIn("AI Agent Hub", HOME_HEADING)
 
-    def test_all_seven_pages_render_without_exception(self):
+    def test_all_eight_pages_render_without_exception(self):
         for filename in ('app.py', 'pages/1_AI_Agent.py', 'pages/2_AI_Chat.py',
                          'pages/3_Web_Crawler.py', 'pages/4_Agent_Router.py',
-                         'pages/5_Agent_Core.py', 'pages/6_Agent_Core_3.py'):
+                         'pages/5_Agent_Core.py', 'pages/6_Agent_Core_3.py',
+                         'pages/7_Research_Media.py'):
             with self.subTest(page=filename):
                 app = AppTest.from_file(str(ROOT / filename), default_timeout=30).run()
                 self.assertFalse(app.exception)
