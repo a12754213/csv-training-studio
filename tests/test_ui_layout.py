@@ -24,7 +24,8 @@ class PageLayoutChecks(unittest.TestCase):
         for filename in ('app.py', 'pages/1_AI_Agent.py', 'pages/2_AI_Chat.py',
                          'pages/3_Web_Crawler.py', 'pages/4_Agent_Router.py',
                          'pages/5_Agent_Core.py', 'pages/6_Agent_Core_3.py',
-                         'pages/7_Research_Media.py'):
+                         'pages/7_Research_Media.py', 'pages/0_AI_Workspace.py',
+                         'pages/8_CSV_Workspace.py'):
             with self.subTest(page=filename):
                 app = AppTest.from_file(str(ROOT / filename), default_timeout=30).run()
                 self.assertFalse(app.exception)

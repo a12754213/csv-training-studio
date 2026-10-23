@@ -1,34 +1,35 @@
-# AI Agent Hub · 多功能智慧工作台 v3.1.0
+# AI Agent Hub · 多功能智慧工作台 v3.2.0
 
-AI Agent Hub 是可持續擴充的工具集合：資料分析 Agent、自然語言 CSV 訓練規劃、公開網頁擷取、工具自動分流，以及原有完整 CSV／AutoML 訓練流程。
+用自然語言提出任務，讓獨立工具組合完成搜尋、公開網頁擷取、檔案分析及台股趨勢研究，再接續原有 CSV／AutoML 訓練。
 
-## 網站首頁與模組導覽
+**[開始使用與需要補充的設定](docs/QUICKSTART_AGENT.md)** · [線上網站](https://csv-training-studio-nz7xft3au8v8d6pcrjrnkd.streamlit.app/)
 
-- **首頁 AI Agent Hub**：從工作模組卡片直接進入獨立工具。首頁下半部保留完整 CSV／AutoML 訓練工作區。
-- **資料分析 Agent**：上傳 CSV、分析缺值與欄位，建議預測目標與模型，再確認訓練及下載模型。
-- **自然語言工作台**：用中文描述 CSV 預測需求；OpenAI API 另行計費，確認前不會自動訓練。
-- **網頁資料擷取**：處理單一公開靜態 HTML／CSV URL 的表格與文字，尊重 robots.txt，不支援動態網站或影片。
-- **Agent 工具自動分流**：依網頁內容選擇表格分析或文字分析工具，目前是可解釋規則型路由。
-- **Agent Core 2.0（保留）**：在側邊欄進入 Agent Core，輸入指令／公開網址或上傳 CSV，預覽意圖與工具路徑，人工核准讀取；依結果使用 web.crawl、csv.inspect、csv.plan 或 text.inspect。訓練須第二次確認後才執行。可選擇 OpenAI API 做自然語言解析，未提供 API 時使用明確的規則分流。
+## 統一操作入口
 
-- **Agent Core 3.0（新）**：可處理最多三個使用者提供的網頁／CSV 來源，依實際內容決定下一個受控工具；加入工作狀態、步驟紀錄與有限重試。另提供預設綁定本機、需要長權杖的唯讀 HTTP MCP 原型（不會自動暴露至公網，也不代表 ChatGPT 已完成連線）。詳細見 [Agent Core 3.0](docs/AGENT_CORE_3.md)。
+- **AI 任務（首頁）**：輸入目標或網址／附上檔案 → 一次開始 → 查看結論、圖表、來源與執行紀錄。支援下載結果和把網頁表格／股價／上傳 CSV 接續到訓練頁。
+- **CSV 訓練**：完整保留分類、回歸、時間序列、欄位排除、中文文字與單位處理、AutoML、模型評估與 ZIP 匯出。
+- **網路與多媒體**：各工具的手動操作、YouTube、動態頁面及本機記憶／排程。
+- **進階工具**：原資料 Agent、自然語言 CSV 規劃、單頁爬蟲、Router、Core 2.0／3.0 都保留；一般任務可從首頁開始。
 
-- **網路研究與多媒體（v3.1.0）**：新增自然語言跨工具分派器、搜尋 Brave Web Search、選擇並擷取公開網頁、有限來源 AI 研究摘要、隔離的 Playwright 動態頁面、YouTube 公開資訊／字幕、PDF、圖片理解、音訊轉錄、本機 SQLite 記憶與排程。部分模組需要使用者自己的 API Key、可選依賴或隔離 Worker；詳見 [能力與限制](docs/AGENT_CAPABILITIES.md)。
+## 台積電股價示例
 
-原本的 CSV Training Studio 並未刪除，而是 **AI Agent Hub 裡的 CSV／AutoML 模組**。包含中文斷詞、TF-IDF、數字/單位換算、資料切分、時間序列、模型評估與 ZIP 匯出。
+首頁點「分析台積電股價未來趨勢」→「開始分析」，不需 Key 即可取得證交所 2330 日成交價、均線與歷史統計。按「訓練並回測股價模型」實際比較 Ridge／Random Forest 和 Naive，顯示是否勝過簡單基準。支援 3～12 個月份、1／5／20 筆跨度、模型 ZIP 匯出。
 
-> 舊的 GitHub 倉庫名稱與 Streamlit Cloud 網址暫時保留，避免破壞既有部署、分享連結與測試。**瀏覽器標題與網站內可見的產品名稱已改為 AI Agent Hub**；要連網址本身一起改名，需到 Streamlit Cloud 帳號設定處理。
+資料是未還原日成交價、不是即時報價。除權息、缺資料和樣本太少會影響解讀；回測不等於投資報酬或未來獲利保證。價格模型與新聞研究分開呈現，目前沒有財報估值、可靠機率區間或自動交易。
 
+## 搜尋與 AI 分析
 
-## 🤖 AI Agent 自然語言助手（新增）
+首頁左側「連線設定」填入 Brave Search API Key，可自動搜尋並讀取最多三個結果。再填 OpenAI API Key、於「分析選項」開啟 AI 報告，才會將公開來源片段交給模型整理並標來源編號。未啟用時顯示原文摘錄與表格統計。
 
-- **無 API 版本**：在側邊欄開啟「AI Agent」，上傳 CSV 後確認目標欄與訓練設定。
-- **自然語言版本**：在側邊欄開啟「AI Chat」，提供自己的 OpenAI API Key 後，直接輸入「幫我預測是否流失，排除客戶編號並比較模型」。
-- 模型只負責提出**可審核的計畫**，必須在網頁按「核准並開始訓練」才會真正執行。所有訓練與評估仍重用原本的 Python 核心。
-- ChatGPT Plus 不包含 API 額度；不輸入 API Key 仍可使用原有 AI Agent 工作台，或依 `docs/CHATGPT_LOCAL.md` 設定本機 MCP。
-- MCP 新增唯讀功能清單 `list_agent_capabilities` 與 `run_agent_read_tool`，也共用 Agent 註冊中心。**單靠雲端網站不會使目前 ChatGPT 對話自動連線到你的本機程式**。
+圖片理解／音訊轉錄需要另外開啟檔案傳送選項。CSV、文字 PDF、字幕檔、指定公開網址與台股統計不需要付費模型。金鑰不寫入結果或 Git。公共部署預設不共用伺服器金鑰。
 
-詳細安全說明、未來新增功能方式：`docs/AI_AGENT.md`。
+網站失敗逐來源回報，AI 摘要失敗保留資料，空來源不假裝分析成功。任務分派是受控規則流程，不會自由執行未知程式或自己登入網站。
+
+## ChatGPT 與選用能力
+
+本機 STDIO／遠端唯讀 MCP 另提供 `research_public_topic`、`analyze_twse_stock`，共用同一套核心；**程式就緒不等於你的 ChatGPT 帳號已連線**。仍需你完成客戶端連接與服務驗證。動態瀏覽器、YouTube、持久記憶與排程需要額外環境，見 [功能與限制](docs/AGENT_CAPABILITIES.md)。
+
+GitHub 倉庫名稱和原 Streamlit 網址保留，既有工具 URL 保留。首頁變為 AI 任務；原首頁 CSV 工作區移到「CSV 訓練」。以下為原有 CSV 模組的詳細參考。
 
 ## v2.2.0 新增
 
@@ -82,7 +83,7 @@ Python、套件與快取放在此專案的 `.runtime` / `.venv`，不更改你�
 
 GitHub Pages 只能提供靜態網頁，無法直接執行本專案的 Python 訓練後端。
 線上版本使用 Streamlit 主機運算，資料會傳到該主機；本地版本則在你的電腦運算。
-程式不會把上傳 CSV 自動提交到 GitHub，也不呼叫外部 AI 模型。
+程式不會把上傳 CSV 自動提交到 GitHub；只有明確啟用的 AI 功能才會呼叫外部模型。
 下載結果及訓練模型請自行保存；程式版本回溯不會還原未保存的資料或模型。
 
 若此 ZIP 有 `history/CSV_Training_Studio.bundle`，裡面含原始 v2.0.0 與此版的 Git 紀錄。
@@ -255,7 +256,8 @@ print(cross_val_score(pipeline, X, y, cv=cv, scoring="f1_macro"))
 
 | 檔案 | 內容 |
 |---|---|
-| app.py | Streamlit 介面 |
+| app.py / pages/0_AI_Workspace.py | 導覽／統一任務首頁 |
+| pages/8_CSV_Workspace.py | CSV 訓練介面 |
 | preprocessing.py | 讀檔、欄位分析、切分、前處理、基準評估與匯出 |
 | text_features.py | 中文／英文 token、TF-IDF、單一數字與單位解析 |
 | train.py | 使用訓練資料包建立模型 |
@@ -279,7 +281,7 @@ print(cross_val_score(pipeline, X, y, cv=cv, scoring="f1_macro"))
 - https://github.com/fxsjy/jieba
 - https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
 
-訓練核心與 MCP 本機連接不需要 OpenAI API key。直接使用網頁時不呼叫 AI；使用 ChatGPT 操作時，工具回傳的欄位、摘要與結果會進入對話，依 ChatGPT 的存取與資料設定處理。
+訓練核心與 MCP 本機連接不需要 OpenAI API key。CSV 訓練本身不呼叫 AI；啟用 AI 報告／Chat／多媒體時會呼叫外部模型。使用 ChatGPT 操作時，工具回傳的欄位、摘要與結果會進入對話，依 ChatGPT 的存取與資料設定處理。
 
 
 ## Web Crawler + Agent Router

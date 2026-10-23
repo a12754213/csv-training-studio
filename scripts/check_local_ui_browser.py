@@ -75,13 +75,14 @@ def run_browser(base):
                     nav = page.locator('[data-testid="stSidebarNav"]')
                     nav.wait_for(state="visible", timeout=15000)
                     for label, heading in (
-                        ("AI Agent", AGENT_HEADING),
-                        ("AI Chat", CHAT_HEADING),
-                        ("Web Crawler", CRAWLER_HEADING),
-                        ("Agent Router", ROUTER_HEADING),
-                        ("Agent Core", CORE_HEADING),
-                        ("Agent Core 3", CORE3_HEADING),
-                        ("Research", RESEARCH_HEADING),
+                        ("資料分析 Agent", AGENT_HEADING),
+                        ("CSV 自然語言規劃", CHAT_HEADING),
+                        ("單一網頁擷取", CRAWLER_HEADING),
+                        ("工具分流", ROUTER_HEADING),
+                        ("Core 2.0", CORE_HEADING),
+                        ("Core 3.0", CORE3_HEADING),
+                        ("網路與多媒體", RESEARCH_HEADING),
+                        ("CSV 訓練", "📊 CSV / AutoML 訓練工作區"),
                     ):
                         link = nav.get_by_role("link", name=re.compile(label)).first
                         link.wait_for(state="attached", timeout=10000)

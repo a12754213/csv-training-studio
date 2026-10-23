@@ -5,7 +5,7 @@ modules based on data supplied by a website, model output, or uploaded CSV.
 """
 from agent_hub import AgentRegistry
 from . import (csv_workflow, text_workflow, web_crawler, research_tools,
-               browser_tools, document_media, video_tools)
+               browser_tools, document_media, video_tools, market_tools)
 
 
 def build_registry() -> AgentRegistry:
@@ -17,4 +17,5 @@ def build_registry() -> AgentRegistry:
     browser_tools.register(registry)
     document_media.register(registry)
     video_tools.register(registry)
+    market_tools.register(registry)
     return registry
