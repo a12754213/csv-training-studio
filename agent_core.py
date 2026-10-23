@@ -155,12 +155,15 @@ def propose_with_openai(instruction: str, api_key: str, *, has_upload: bool,
 
 
 def execute_read_plan(intent: dict[str, Any], registry: AgentRegistry, *,
-                      upload: bytes | None = None, filename: str = "upload.csv",\n                      user_approved: bool = False) -> dict[str, Any]:
+                      upload: bytes | None = None, filename: str = "upload.csv",
+                      user_approved: bool = False) -> dict[str, Any]:
     """Carry out approved bounded read tools, chaining their *actual* outputs.
 
     The UI calls this only after the user approves the proposed URL/read operation.
     Training is deliberately absent from this function.
     """
+    if not user_approved:
+        raise PermissionError("外部讀取和工具執行必須取得使用者明確核准。")
     source = intent.get("source")
     trace: list[dict[str, str]] = []
     fetched = None
