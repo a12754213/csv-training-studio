@@ -79,9 +79,9 @@ def download_zip(page, frame, label, directory):
 
 def click_selectbox_option(frame, label, option):
     control = frame.get_by_role("combobox", name=label)
-    root = control.locator('xpath=ancestor::*[@data-baseweb="select"][1]')
-    print("SELECT ROOT BEFORE", root.evaluate("(el) => el.outerHTML.slice(0, 2500)"), flush=True)
-    root.click(timeout=20000)
+    print("SELECT INPUT BEFORE", control.evaluate(
+        "(el) => el.parentElement?.parentElement?.outerHTML.slice(0, 2800)"), flush=True)
+    control.click(timeout=20000)
     frame.wait_for_timeout(350)
     print("SELECTBOX DEBUG", {
         "value": control.input_value(),
