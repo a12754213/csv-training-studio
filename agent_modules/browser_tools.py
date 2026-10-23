@@ -50,7 +50,8 @@ def render(context: AgentContext, params: dict) -> dict:
         counter["requests"] += 1
         try:
             _destination(target)
-            final, data, mime, code = _get(\n                target, check_policy=lambda u: urlsplit(u).hostname == host and _robots_allowed(u))
+            final, data, mime, code = _get(
+                target, check_policy=lambda u: urlsplit(u).hostname == host and _robots_allowed(u))
             if urlsplit(final).hostname != host or counter["bytes"] + len(data) > MAX_TOTAL_BYTES:
                 route.abort()
                 return
