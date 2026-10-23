@@ -15,10 +15,14 @@ st.caption("單一公開網址 → 網頁文字或 HTML 表格 → 預覽／下�
 st.info("首版支援公開、靜態 HTML／CSV，最多 1.5 MB、1,000 列。會尊重 robots.txt；不支援登入、JavaScript 動態資料或反爬限制。")
 
 url = st.text_input("公開網頁網址", placeholder="https://example.com/articles")
+# Display only the fetched result matching the current URL input.
+if st.session_state.get("crawler_requested_url") != url.strip():
+    st.session_state.pop("crawler_result", None)
 if st.button("確認網址並抓取", type="primary"):
     try:
         result = build_registry().run("web.crawl", AgentContext(), {"url": url}, approved=True)
         st.session_state["crawler_result"] = result
+        st.session_state["crawler_requested_url"] = url.strip()
         st.success("資料擷取完成。")
     except (ValueError, OSError) as exc:
         st.session_state.pop("crawler_result", None)
