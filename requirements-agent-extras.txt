@@ -1,0 +1,5 @@
+# Optional local-only browser and video extraction dependencies.
+# Never enable unisolated Chromium on a public multi-tenant Streamlit server.
+playwright==1.55.0
+yt-dlp==2026.10.21
+youtube-transcript-api>=1.2,<2
