@@ -61,7 +61,7 @@ if text:
     previous = list(st.session_state['chat_history_user'])
     st.session_state['chat_history_user'] = (previous + [text])[-4:]
     st.session_state['chat_pending'] = None
-    st.session_state['chat_result'] = None
+    # Keep the previous training artifact available while the user asks follow-up questions.
     if not api_key:
         reply = '要使用網站內的自然語言 AI，請先在「模型連接與隱私設定」填入自己的 OpenAI API Key。也可使用無 API 的 AI Agent 工作台。'
     else:
