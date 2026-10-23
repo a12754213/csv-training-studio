@@ -18,6 +18,8 @@
 | 本機記憶 | `AgentStore` | 以 SQLite 保存、檢索、刪除明確同意的筆記與安全狀態摘要 | 單機私有資料夾，`AI_AGENT_LOCAL_WORKSPACE=1` |
 | 排程 | `AgentStore`、`agent_worker.py` | 依使用者核准的頻率定期查詢公開搜尋索引、保存最近回報 | SQLite、Brave 金鑰、Windows Task Scheduler／cron 主動執行 Worker |
 
+**自然語言跨工具分派器**：Research & Media 上方可輸入中文要求，`agent_supervisor.plan_task` 會依明確網址、上傳副檔名及請求文字選擇 `web.search`、`web.research_selected`、`document.pdf`、`image.inspect`／`image.describe`、`audio.transcribe`、`csv.inspect`、YouTube 資訊／字幕等既有工具。使用者可一次核准搜尋並明確選擇允許自動讀取前三個搜尋結果；外部傳送檔案／文字另外核准。這是**受控的有限任務分派器**，不是能自由執行任意程式或自行登入各個網站的 Agent。
+
 首頁會出現第八個模組頁面「Research & Media」。其他原有 CSV／AutoML／Core 2.0／Core 3.0 不變。
 
 ## 選用依賴
