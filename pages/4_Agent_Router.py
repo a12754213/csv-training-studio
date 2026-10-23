@@ -7,12 +7,15 @@ import streamlit as st
 from agent_hub import AgentContext
 from agent_modules import build_registry
 from agent_router import run_web_workflow
-from ui_layout import apply_page_layout
+from ui_layout import apply_page_layout, render_page_header, ROUTER_HEADING
 
-st.set_page_config(page_title="Agent 自動分流 · CSV Training Studio", page_icon="🧭", layout="wide")
+st.set_page_config(page_title="Agent 工具自動分流 · AI Agent Hub", page_icon="🧭", layout="wide")
 apply_page_layout()
-st.title("🧭 AI Agent · 自動工具分流")
-st.caption("輸入公開網址 → Agent 自動抓取並判別資料型態 → 呼叫對應的獨立功能。")
+render_page_header(
+    title=ROUTER_HEADING,
+    category="TOOL ROUTER",
+    description="從公開網址取得內容後，自動選擇文字分析或 CSV 資料分析工具；模型訓練仍須另外批准。",
+)
 st.info("目前的路由是可解釋的規則型 Agent，不需要 API Key；尚不是自由網路搜尋或 LLM 自主瀏覽。抓取與訓練分開確認。")
 
 registry = build_registry()

@@ -17,7 +17,10 @@ from urllib.request import urlopen
 
 from playwright.sync_api import sync_playwright
 
+# Import labels from the shared UI module for version-safe browser assertions.
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from ui_layout import HOME_HEADING, AGENT_HEADING, CHAT_HEADING, CRAWLER_HEADING, ROUTER_HEADING
 
 
 def find_free_port():
@@ -65,15 +68,17 @@ def run_browser(base):
                 context = browser.new_context(viewport=viewport, locale="zh-TW")
                 page = context.new_page()
                 page.goto(base, wait_until="domcontentloaded", timeout=45000)
-                verify_heading(page, "把 CSV，整理成能訓練的資料。")
+                verify_heading(page, HOME_HEADING)
                 print(f"PASS: homepage heading visible at {viewport['width']}px", flush=True)
                 if viewport["width"] == 1280:
                     # Streamlit's automatic multipage navigation must link both new pages.
                     nav = page.locator('[data-testid="stSidebarNav"]')
                     nav.wait_for(state="visible", timeout=15000)
                     for label, heading in (
-                        ("AI Agent", "🤖 AI Agent 工作台"),
-                        ("AI Chat", "💬 AI Agent · 自然語言助手"),
+                        ("AI Agent", AGENT_HEADING),
+                        ("AI Chat", CHAT_HEADING),
+                        ("Web Crawler", CRAWLER_HEADING),
+                        ("Agent Router", ROUTER_HEADING),
                     ):
                         link = nav.get_by_role("link", name=re.compile(label)).first
                         link.wait_for(state="attached", timeout=10000)

@@ -6,12 +6,15 @@ import pandas as pd
 import streamlit as st
 from agent_hub import AgentContext
 from agent_modules import build_registry
-from ui_layout import apply_page_layout
+from ui_layout import apply_page_layout, render_page_header, CRAWLER_HEADING
 
-st.set_page_config(page_title="網路爬蟲 · CSV Training Studio", page_icon="🌐", layout="wide")
+st.set_page_config(page_title="網頁資料擷取 · AI Agent Hub", page_icon="🌐", layout="wide")
 apply_page_layout()
-st.title("🌐 網路爬蟲 · 獨立工具")
-st.caption("單一公開網址 → 網頁文字或 HTML 表格 → 預覽／下載 CSV；不會自動啟動模型訓練。")
+render_page_header(
+    title=CRAWLER_HEADING,
+    category="WEB CRAWLER",
+    description="獨立讀取公開靜態網頁的文字或表格，直接預覽並下載 CSV，不會擅自啟動訓練。",
+)
 st.info("首版支援公開、靜態 HTML／CSV，最多 1.5 MB、1,000 列。會尊重 robots.txt；不支援登入、JavaScript 動態資料或反爬限制。")
 
 url = st.text_input("公開網頁網址", placeholder="https://example.com/articles")

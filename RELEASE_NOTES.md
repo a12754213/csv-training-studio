@@ -1,19 +1,19 @@
-# AI Agent Hub · CSV Training Studio v2.4.0
+# AI Agent Hub v2.5.0 — 多功能智慧工作台
 
-此版本延續 v2.3.1 的 CSV/AutoML/AI Chat/MCP 系統，加入**獨立網路工具**，而不是把所有功能塞進 CSV。
+這次以整體使用體驗為中心重新整理網站，讓 CSV Training Studio 不再主導全部頁面的名稱，正式定位為 **AI Agent Hub**。
 
-## 本次新增
-- **網路爬蟲**獨立頁面：人工確認後擷取單頁公開 HTML/CSV，顯示文章文字、表格資料並支援匯出 CSV。
-- **AI Agent 自動工具分流**獨立頁面：讀到表格時交由 `csv.inspect`，指定目標後可 `csv.plan`，經使用者再次同意才能 `csv.train`；文章則送至 `text.inspect`。
-- **MCP 新工具**：`inspect_public_web` 與 `import_public_web_table`，供有連接的 ChatGPT Agent 使用。
-- **安全邊界**：公開 HTTP(S)、DNS/IP 檢查與連線目標鎖定、尊重 robots.txt、拒絕登入/內網/自訂連接埠、限制轉址與擷取容量，不執行網頁中的指令。
-- **測試覆蓋**：增加獨立爬蟲及路由測試；保留 CSV 上傳→訓練→ZIP 的端到端測試。修改網址會清除舊結果，避免錯認來源。
+## 首頁與工作區
+- 首頁改為 AI Agent Hub，多模組入口可直接選擇資料分析 Agent、自然語言工作台、公開網頁資料擷取及 Agent 工具分流。
+- 原有 CSV／AutoML 流程保留在首頁下方；範例資料、上傳、欄位分析、切分、模型訓練與 ZIP 匯出不變。
+- 五個頁面統一標題、版本、小節說明及響應式版面，繁體中文行高和手機安全間距同步調整。
+- 自然語言工具仍需要 OpenAI API Key；規則式 Agent 不需要。網站不會替使用者自動付費或執行未核准訓練。
 
-## 暫不支援
-這次的「Agent 自動分流」是**規則型**，尚不是能自行搜尋全網的 LLM Agent。
-目前沒有多頁遞迴爬取、JavaScript 動態頁面、YouTube 字幕、影片下載、無字幕音訊轉錄、影像辨識、登入及反爬繞過。這些應以**獨立模組**逐步開發、驗收。
-ChatGPT Plus 並不包含網站內額外 OpenAI API 使用額度；本機 MCP 客戶端也必須由使用者實際連接。
+## 向下相容
+- 原本的 Python 模組、訓練輸出檔、CSV/時間序列設定、MCP 工具 API 不更動。
+- 舊 GitHub 專案名稱 `csv-training-studio` 和既有 Streamlit Cloud 網址先保留，避免分享連結失效。網站可見品牌已變更。
+- 更新自動化 UI、桌機／手機與雲端瀏覽器測試，以確認新導覽和舊訓練功能。
 
-若你的正式網站還是舊版，請檢查 Streamlit Cloud 指向 `main`／`app.py`，並從 Manage app 查看 Logs、重新啟動。
+## 限制
+影片擷取、動態登入網站與任意網頁自主操作仍未實作。跨工具分流仍是規則型；不是已能解決任何任務的完整自主 Agent。
 
-詳細說明請見 `docs/AI_AGENT.md`。
+詳細參考：`README.md`、`docs/AI_AGENT.md`。
