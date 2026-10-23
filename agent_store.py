@@ -5,6 +5,7 @@ are ever persisted. The scheduler runs ONLY when the operator runs the worker.
 Do not use as a multi-tenant unauthenticated cloud service.
 """
 from __future__ import annotations
+from contextlib import contextmanager
 import json
 import re
 import sqlite3
@@ -27,11 +28,16 @@ class AgentStore:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.setup()
 
+    @contextmanager
     def connect(self):
         conn = sqlite3.connect(self.path, timeout=10)
-        conn.row_factory = sqlite3.Row
-        conn.execute("PRAGMA busy_timeout=10000")
-        return conn
+        try:
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA busy_timeout=10000")
+            with conn:
+                yield conn
+        finally:
+            conn.close()
 
     def setup(self):
         with self.connect() as db:
