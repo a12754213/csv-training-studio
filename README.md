@@ -13,7 +13,7 @@ AI Agent Hub 是可持續擴充的工具集合：資料分析 Agent、自然語�
 
 - **Agent Core 3.0（新）**：可處理最多三個使用者提供的網頁／CSV 來源，依實際內容決定下一個受控工具；加入工作狀態、步驟紀錄與有限重試。另提供預設綁定本機、需要長權杖的唯讀 HTTP MCP 原型（不會自動暴露至公網，也不代表 ChatGPT 已完成連線）。詳細見 [Agent Core 3.0](docs/AGENT_CORE_3.md)。
 
-- **網路研究與多媒體（v3.1.0）**：新增搜尋 Brave Web Search、選擇並擷取公開網頁、有限來源 AI 研究摘要、隔離的 Playwright 動態頁面、YouTube 公開資訊／字幕、PDF、圖片理解、音訊轉錄、本機 SQLite 記憶與排程。部分模組需要使用者自己的 API Key、可選依賴或隔離 Worker；詳見 [能力與限制](docs/AGENT_CAPABILITIES.md)。
+- **網路研究與多媒體（v3.1.0）**：新增自然語言跨工具分派器、搜尋 Brave Web Search、選擇並擷取公開網頁、有限來源 AI 研究摘要、隔離的 Playwright 動態頁面、YouTube 公開資訊／字幕、PDF、圖片理解、音訊轉錄、本機 SQLite 記憶與排程。部分模組需要使用者自己的 API Key、可選依賴或隔離 Worker；詳見 [能力與限制](docs/AGENT_CAPABILITIES.md)。
 
 原本的 CSV Training Studio 並未刪除，而是 **AI Agent Hub 裡的 CSV／AutoML 模組**。包含中文斷詞、TF-IDF、數字/單位換算、資料切分、時間序列、模型評估與 ZIP 匯出。
 
