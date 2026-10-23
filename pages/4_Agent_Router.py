@@ -18,11 +18,16 @@ st.info("目前的路由是可解釋的規則型 Agent，不需要 API Key；尚
 registry = build_registry()
 url = st.text_input("請提供想分析的公開網址", placeholder="https://example.com/data.csv")
 target_hint = st.text_input("想預測的欄位（選填，請輸入完整欄名）", help="留空只會分析；Agent 不會猜測你要預測什麼。")
+# A changed source invalidates the old result, preventing stale/misattributed data.
+if st.session_state.get("web_agent_requested_url") != url.strip():
+    st.session_state.pop("web_agent_result", None)
+    st.session_state.pop("web_agent_training", None)
 if st.button("確認抓取並讓 Agent 自動分流", type="primary"):
     try:
         with st.spinner("抓取單頁資料，辨識是否適合交給 CSV 訓練或文字分析…"):
             result = run_web_workflow(registry, url, target=target_hint.strip())
         st.session_state["web_agent_result"] = result
+        st.session_state["web_agent_requested_url"] = url.strip()
         st.session_state.pop("web_agent_training", None)
         st.success("Agent 已選擇合適的分析模組。")
     except (ValueError, OSError) as exc:
