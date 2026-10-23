@@ -10,14 +10,15 @@ from agent_chat import AgentChatError, DEFAULT_MODEL, propose_with_openai
 from agent_hub import AgentContext
 from agent_modules import build_registry
 from preprocessing import DataPreparationError
-from ui_layout import apply_page_layout
-from version import __version__
+from ui_layout import apply_page_layout, render_page_header, CHAT_HEADING
 
-st.set_page_config(page_title='AI Agent 對話 · CSV Training Studio', page_icon='💬', layout='wide')
+st.set_page_config(page_title="自然語言工作台 · AI Agent Hub", page_icon='💬', layout='wide')
 apply_page_layout()
-st.caption(f'CSV Training Studio · v{__version__}')
-st.title('💬 AI Agent · 自然語言助手')
-st.caption('上傳 CSV → 直接說明需求 → AI 提出建議 → 你審核 → 由既有訓練引擎執行。')
+render_page_header(
+    title=CHAT_HEADING,
+    category="NATURAL LANGUAGE",
+    description="用中文描述 CSV 分析或預測需求，AI 建議工作計畫；執行模型訓練前仍由你確認。",
+)
 st.info('這個網頁中的 AI 對話屬於可選的 OpenAI API 功能，API 獨立計費，不包含在 ChatGPT Plus 訂閱中。'
         ' 若不使用 API，可切換「AI Agent」工作台手動設定，或在本機使用既有 MCP 連接器讓 ChatGPT 操作。')
 
@@ -170,7 +171,7 @@ if pending and pending['digest'] == digest:
         else:
             request_options.update(split_mode=split_mode, split_column=split_column)
         try:
-            with st.spinner('使用 CSV Training Studio 原有訓練核心執行…'):
+            with st.spinner('呼叫 AI Agent Hub 的模型訓練工具…'):
                 trained = registry.run('csv.train', context, request_options, approved=True)
             st.session_state['chat_result'] = {
                 'digest': digest, 'request': request_options, 'output': trained}
