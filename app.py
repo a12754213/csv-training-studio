@@ -9,7 +9,8 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 from version import __version__
-from ui_layout import apply_page_layout
+from ui_layout import (apply_page_layout, render_page_header,
+                       render_hub_directory, HOME_HEADING)
 from automl import train_prepared
 
 from preprocessing import (
@@ -19,19 +20,17 @@ from preprocessing import (
 )
 
 ROOT = Path(__file__).resolve().parent
-st.set_page_config(page_title="CSV Training Studio", page_icon="📊", layout="wide")
+st.set_page_config(page_title="AI Agent Hub｜多功能智慧工作台", page_icon="🤖", layout="wide")
 apply_page_layout()
-st.markdown("""<style>
-
-[data-testid="stMetric"]{border:1px solid #d7e3df;border-radius:12px;padding:16px;background:rgba(128,160,150,.04);}
-.brand{font-size:12px;letter-spacing:2px;color:#16816d;font-weight:700;margin-bottom:8px;}
-.intro{color:#63716c;font-size:17px;line-height:1.7;margin-bottom:24px;}
-.tag{display:inline-block;border:1px solid #b6d7cc;border-radius:20px;padding:5px 12px;margin:0 6px 8px 0;color:#236653;font-size:12px;}
-</style>""", unsafe_allow_html=True)
-st.markdown(f'<div class="brand">CSV TRAINING STUDIO · {__version__}</div>', unsafe_allow_html=True)
-st.title("把 CSV，整理成能訓練的資料。")
-st.markdown('<div class="intro">先看懂資料，再整理特徵。保留每一步規則，讓新資料也能用同一套流程。</div>', unsafe_allow_html=True)
-st.markdown('<span class="tag">自動分析與補值</span><span class="tag">中文／英文斷詞</span><span class="tag">數字與單位拆分</span><span class="tag">可下載訓練資料</span>', unsafe_allow_html=True)
+render_page_header(
+    title=HOME_HEADING,
+    category="WORKSPACE",
+    description="將資料分析、AutoML 訓練、網頁擷取與文字工具整合在同一個工作區；"
+                "從下方挑選模組開始，不必每次都從 CSV 出發。",
+)
+render_hub_directory()
+st.subheader("📊 CSV / AutoML 訓練工作區")
+st.caption("這是 Hub 其中一個完整模組：探索 CSV、整理特徵、訓練分類／回歸／時間序列模型，並匯出可重現的成果。")
 
 SAMPLES = {"客戶流失｜分類": ("demo_churn.csv", "是否流失"),
            "房價預測｜回歸": ("demo_housing.csv", "房價萬元"),
@@ -39,7 +38,7 @@ SAMPLES = {"客戶流失｜分類": ("demo_churn.csv", "是否流失"),
            "每日銷量｜時間序列": ("demo_timeseries.csv", "銷量")}
 
 with st.sidebar:
-    st.header("開始整理")
+    st.header("CSV 訓練資料")
     source = st.radio("資料來源", ["使用示範資料", "上傳我的 CSV"])
     sample = None
     uploaded = None
@@ -64,7 +63,7 @@ with st.sidebar:
     st.caption("適合含數值、類別與文字的表格分類／回歸。支援 30 MB、20 萬列、500 個欄位以內的 CSV。")
     st.caption("本地啟動：資料由你的電腦處理。線上使用：上傳內容會送到部署此程式的伺服器處理。兩者都不呼叫 AI 服務。")
     st.caption("請下載要保留的結果；重新整理或伺服器重啟後，工作階段內容可能消失。")
-    st.caption(f"程式版本 v{__version__}")
+    st.caption(f"AI Agent Hub · 程式版本 v{__version__}")
 
 missing_tokens = tuple(x.strip() for x in token_text.split(",") if x.strip())
 try:
