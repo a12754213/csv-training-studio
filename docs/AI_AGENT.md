@@ -41,3 +41,40 @@ def register(registry):
 ID、任務類型與模型選擇只是建議；業務目的、資料洩漏與預測時實際可得欄位仍須確認。第一版工作台的一般表格訓練使用隨機切分，群組／時間切分及進階預處理請在原本的整理頁操作。時間序列需要單一可解析、無缺失且無重複的時間欄。
 
 自動測試：`python -m unittest discover -s tests -v`。
+
+
+## 第二階段：自然語言對話入口（可選）
+
+新的 Streamlit 左側頁面 **「AI Chat」**（檔案 `pages/2_AI_Chat.py`）可以用繁體中文直接提出分析需求，例如：
+
+> 幫我預測「是否流失」，排除「客戶編號」，自動比較模型。
+
+> 用「日期」和「銷量」，看最近 30 筆來預測下一筆。
+
+流程為：
+
+1. 上傳 CSV；在伺服器本地使用 `csv.inspect` 產生欄位概況。
+2. **可選**：輸入自己的 OpenAI API Key，透過 Responses API 的 JSON Schema 結構化輸出解析自然語言。預設模型為 `gpt-4.1-mini`。
+3. 只有使用者指令、欄位名稱、型態、缺值比例、行數及排除欄位建議送往 API；**不送原始 CSV 列、範例值、資料檔、模型檔或 API Key 作為模型輸入**。欄名可能含敏感資訊，使用前請自行斟酌。
+4. `agent_chat.validate_proposal` 只接受已知的任務、欄位和參數。不認識的目標會要求澄清，沒有時間欄不能建立時間序列計畫。CSV 欄位、LLM 輸出皆屬不可信內容。
+5. 只有在介面上再次審核模型、目標、時間／群組切分、排除欄位並按下「核准並開始訓練」後，才會呼叫 `registry.run('csv.train', ..., approved=True)`。
+6. 當次訓練結束後顯示**原本訓練核心產出的真實指標**，並提供 `training_data.zip` 下載。
+
+`gpt-4.1-mini` 的 API 存取、帳單與可用性受 API 帳戶狀態影響。**ChatGPT Plus 方案不包含 API 免費額度**。這個功能不會替你申請或保存 API Key 到 GitHub。若不使用額外 API，仍可使用原始 AI Agent 工作台或本機 ChatGPT MCP。
+
+### 與 ChatGPT MCP 共用模組
+
+`chatgpt_server.py` 新增兩個唯讀工具：
+
+- `list_agent_capabilities()`：列出程式已註冊的功能名稱與是否需要核准。
+- `run_agent_read_tool(dataset_id, capability, ...)`：只允許 `csv.inspect` 或 `csv.plan`，並直接重用 `agent_hub` 註冊中心。
+
+**開始訓練仍使用原本的 `start_training`**，由本機排程服務管理工作；讀取結果使用 `get_training_result`。不可從唯讀工具繞過訓練限制。若你希望在 ChatGPT 網頁或手機上的這段對話直接控制本機程式，仍須先建立可被該客戶端使用且已授權的 MCP 連線。GitHub、Streamlit Cloud 站點**不會因為新增上述程式碼就自動連接到本對話**。
+
+### 安全及部署說明
+
+- API Key 透過密碼欄位輸入，保留於目前 Streamlit 工作階段，不寫入磁碟、原始 CSV 或版控。**部署公開網站時請不要硬編個人金鑰**。
+- AI 不能執行任意命令或 Python 程式；模組需明確註冊，且要求核准的功能仍受程式限制。
+- 自然語言助手不保證理解所有模糊業務需求；資料洩漏、訓練／測試資料重疊仍須人工核對。
+- 此版本只會呼叫外部 API 來理解意圖，**訓練、補值、斷詞、分割與評估仍在 Streamlit 主機上執行**。
+- 本機測試：`python -m unittest tests.test_agent_chat` 或 `python -m unittest discover -s tests -v`。網路/API 真實使用需另外提供你自己的 API Key 驗收。
