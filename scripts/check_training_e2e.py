@@ -23,7 +23,8 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLE = ROOT / "samples" / "demo_churn.csv"
-HEADING = "把 CSV，整理成能訓練的資料。"
+from ui_layout import HOME_HEADING, AGENT_HEADING, CHAT_HEADING
+HEADING = HOME_HEADING
 APP_URL = os.environ.get("APP_URL", "").strip()
 MAX_WAIT = 120000
 sys.path.insert(0, str(ROOT))
@@ -91,7 +92,7 @@ def click_selectbox_option(frame, label, option):
 
 def test_home_training(page, url, directory):
     frame = open_page(page, url, HEADING)
-    version = frame.get_by_text(f"程式版本 v{__version__}", exact=True)
+    version = frame.get_by_text(f"AI Agent Hub · 程式版本 v{__version__}", exact=True)
     version.wait_for(state="visible", timeout=20000)
     frame.get_by_role("tab", name="2 · 整理與切分").click()
     frame.get_by_role("button", name="整理成訓練資料", exact=True).click()
@@ -132,7 +133,7 @@ def get_nav_url(frame, label):
 def test_agent(page, url, directory):
     frame = open_page(page, url, HEADING)
     agent_url = get_nav_url(frame, "AI Agent")
-    frame = open_page(page, agent_url, "🤖 AI Agent 工作台")
+    frame = open_page(page, agent_url, AGENT_HEADING)
     frame.locator('[data-testid="stFileUploader"] input[type="file"]').set_input_files(str(SAMPLE))
     frame.get_by_text("資料品質與欄位分析").wait_for(state="visible", timeout=MAX_WAIT)
     click_selectbox_option(frame, "你想預測哪一欄？（必須由你確認）", "是否流失")
@@ -147,7 +148,7 @@ def test_agent(page, url, directory):
 def test_chat_without_api(page, url):
     frame = open_page(page, url, HEADING)
     chat_url = get_nav_url(frame, "AI Chat")
-    frame = open_page(page, chat_url, "💬 AI Agent · 自然語言助手")
+    frame = open_page(page, chat_url, CHAT_HEADING)
     frame.locator('[data-testid="stFileUploader"] input[type="file"]').set_input_files(str(SAMPLE))
     chat = frame.get_by_test_id("stChatInput").locator("textarea")
     chat.wait_for(state="visible", timeout=MAX_WAIT)
