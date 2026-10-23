@@ -1,3 +1,20 @@
+# AI Agent Hub v3.1.0 — 網路研究、多媒體與本機工作排程
+
+新增 Research & Media 獨立頁面及獨立工具註冊：
+- 自然語言跨工具分派器：辨識搜尋、公開網址、CSV／PDF／圖片／音訊與 YouTube 任務，在權限範圍內呼叫已註冊的工具。
+- Brave 搜尋、明確核准網址後擷取最多三個研究來源、可選 OpenAI 依來源產生有編號的文字報告。
+- 選用 Playwright 動態網頁（預設禁用，需網路隔離）；YouTube 影片公開資訊及可用字幕（預設禁用）。
+- PDF 文字、圖片尺寸與可選視覺理解、WAV 時長及選用語音轉錄、SRT／VTT 字幕整理。
+- 本機 SQLite 明確記憶、任務摘要記錄、每小時／每天／每週搜尋工作定義，以及由 OS Scheduler 單次觸發的 Worker。
+- 遠端唯讀 MCP 原型新增公開搜尋工具，沿用認證限制；不會自動連到 ChatGPT 帳號。
+- 所有新增需要外部存取／上傳的能力皆須確認，專案原有 CSV／AutoML／Core 2.0／3.0 不刪除。
+
+**尚待外部設定：** 自有 Brave/OpenAI API Key、可用隔離瀏覽器與影片相關依賴、私人 HTTPS 遠端服務和 ChatGPT 客戶端授權、常駐排程 Worker 或通知服務。部分網站沒有公開字幕或禁止擷取。GitHub Actions 測試不能取代這些真實外部帳戶的驗收。
+
+完整指南：docs/AGENT_CAPABILITIES.md
+
+---
+
 # AI Agent Hub v3.0.0 — Adaptive Agent Core
 
 - 新增第七個獨立頁面「Agent Core 3.0」：依上一步的網頁擷取結果，從固定已註冊工具中選擇下個步驟；最多三個來源，每次最多 12 步。

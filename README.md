@@ -1,4 +1,4 @@
-# AI Agent Hub · 多功能智慧工作台 v3.0.0
+# AI Agent Hub · 多功能智慧工作台 v3.1.0
 
 AI Agent Hub 是可持續擴充的工具集合：資料分析 Agent、自然語言 CSV 訓練規劃、公開網頁擷取、工具自動分流，以及原有完整 CSV／AutoML 訓練流程。
 
@@ -12,6 +12,8 @@ AI Agent Hub 是可持續擴充的工具集合：資料分析 Agent、自然語�
 - **Agent Core 2.0（保留）**：在側邊欄進入 Agent Core，輸入指令／公開網址或上傳 CSV，預覽意圖與工具路徑，人工核准讀取；依結果使用 web.crawl、csv.inspect、csv.plan 或 text.inspect。訓練須第二次確認後才執行。可選擇 OpenAI API 做自然語言解析，未提供 API 時使用明確的規則分流。
 
 - **Agent Core 3.0（新）**：可處理最多三個使用者提供的網頁／CSV 來源，依實際內容決定下一個受控工具；加入工作狀態、步驟紀錄與有限重試。另提供預設綁定本機、需要長權杖的唯讀 HTTP MCP 原型（不會自動暴露至公網，也不代表 ChatGPT 已完成連線）。詳細見 [Agent Core 3.0](docs/AGENT_CORE_3.md)。
+
+- **網路研究與多媒體（v3.1.0）**：新增自然語言跨工具分派器、搜尋 Brave Web Search、選擇並擷取公開網頁、有限來源 AI 研究摘要、隔離的 Playwright 動態頁面、YouTube 公開資訊／字幕、PDF、圖片理解、音訊轉錄、本機 SQLite 記憶與排程。部分模組需要使用者自己的 API Key、可選依賴或隔離 Worker；詳見 [能力與限制](docs/AGENT_CAPABILITIES.md)。
 
 原本的 CSV Training Studio 並未刪除，而是 **AI Agent Hub 裡的 CSV／AutoML 模組**。包含中文斷詞、TF-IDF、數字/單位換算、資料切分、時間序列、模型評估與 ZIP 匯出。
 

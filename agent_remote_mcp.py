@@ -80,6 +80,21 @@ def build_remote_mcp(token: str, *, allowed_origins: set[str] | None = None):
                 {"web.crawl", "text.inspect", "csv.inspect", "csv.plan"}]
 
     @server.tool(annotations=REMOTE_READ, structured_output=True)
+    def search_public_web(query: str, count: int = 5) -> dict[str, Any]:
+        """Search the public index. Requires BRAVE_SEARCH_API_KEY on the server.
+
+        Search never auto-crawls results; the caller must select/authorize URLs.
+        """
+        import os
+        from agent_hub import AgentContext
+        from agent_modules import build_registry
+        key = os.environ.get("BRAVE_SEARCH_API_KEY", "")
+        if not key:
+            return {"status": "not_configured", "message": "Server Brave Search API not connected."}
+        return build_registry().run("web.search", AgentContext(),
+                                    {"query": query, "api_key": key, "count": count}, approved=True)
+
+    @server.tool(annotations=REMOTE_READ, structured_output=True)
     def preview_public_agent_task(url: str, target: str = "") -> dict[str, Any]:
         """Preview ONE user-provided public URL without contacting it."""
         task = make_task(f"讀取 {url}", target=target or None)

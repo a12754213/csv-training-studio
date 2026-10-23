@@ -6,3 +6,4 @@ scikit-learn==1.8.0
 joblib==1.5.3
 streamlit==1.66.0
 jieba==0.42.1
+pypdf==6.21.2

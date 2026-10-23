@@ -1,7 +1,7 @@
 # Streamlit Community Cloud: install only direct, tested requirements.
 # Keep the full reproducible Windows/Linux dependency lock in requirements.lock.txt.
 # Cloud reads this file because app.py is at the repository root.
-# Cloud deployment revision: v3.0.0 (shared UI + optional Agent pages). Refresh the process after training API changes.
+# Cloud deployment revision: v3.1.0 (shared UI + optional Agent pages). Refresh the process after training API changes.
 numpy==2.3.5
 pandas==2.2.3
 scipy==1.17.0
@@ -9,3 +9,4 @@ scikit-learn==1.8.0
 joblib==1.5.3
 streamlit==1.66.0
 jieba==0.42.1
+pypdf==6.21.2
