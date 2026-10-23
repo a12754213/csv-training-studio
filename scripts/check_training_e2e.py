@@ -79,10 +79,10 @@ def download_zip(page, frame, label, directory):
 
 def click_selectbox_option(frame, label, option):
     control = frame.get_by_role("combobox", name=label)
-    control.click(timeout=20000)
-    # Streamlit BaseWeb select options do not consistently expose role=option.
-    # The expanded menu is rendered near the end of the page DOM.
-    frame.get_by_text(option, exact=True).last.click(timeout=20000)
+    # Streamlit's selectbox uses a searchable combobox input; filtering
+    # and pressing Enter avoids hidden data-table cells of the same name.
+    control.fill(option, timeout=20000)
+    control.press("Enter", timeout=20000)
 
 
 def test_home_training(page, url, directory):
