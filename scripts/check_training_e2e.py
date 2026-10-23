@@ -79,10 +79,18 @@ def download_zip(page, frame, label, directory):
 
 def click_selectbox_option(frame, label, option):
     control = frame.get_by_role("combobox", name=label)
-    # Streamlit's selectbox uses a searchable combobox input; filtering
-    # and pressing Enter avoids hidden data-table cells of the same name.
-    control.fill(option, timeout=20000)
+    control.click(timeout=20000)
+    print("SELECTBOX DEBUG", {
+        "value": control.input_value(),
+        "popover": frame.locator('[data-baseweb="popover"]').all_text_contents()[:3],
+        "listbox": frame.locator('[role="listbox"]').all_text_contents()[:3],
+        "menu": frame.locator('[data-baseweb="menu"]').all_text_contents()[:3],
+    }, flush=True)
+    # Sample target is the last choice. Use keyboard navigation instead
+    # of matching identical text in an off-screen dataframe grid cell.
+    control.press("End", timeout=20000)
     control.press("Enter", timeout=20000)
+    print("SELECTBOX AFTER", control.input_value(), flush=True)
 
 
 def test_home_training(page, url, directory):
@@ -132,7 +140,7 @@ def test_agent(page, url, directory):
     frame.locator('[data-testid="stFileUploader"] input[type="file"]').set_input_files(str(SAMPLE))
     frame.get_by_text("資料品質與欄位分析").wait_for(state="visible", timeout=MAX_WAIT)
     click_selectbox_option(frame, "你想預測哪一欄？（必須由你確認）", "是否流失")
-    frame.get_by_text("Agent 分析建議").wait_for(state="visible", timeout=MAX_WAIT)
+    frame.get_by_text("Agent 分析建議").wait_for(state="visible", timeout=15000)
     # Training must be approved through the form, not by the LLM.
     frame.get_by_role("button", name="確認設定並執行訓練", exact=True).click(timeout=MAX_WAIT)
     download_zip(page, frame, "下載 training_data.zip（含模型及評估）", directory)
