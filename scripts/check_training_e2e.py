@@ -26,7 +26,6 @@ SAMPLE = ROOT / "samples" / "demo_churn.csv"
 HEADING = "把 CSV，整理成能訓練的資料。"
 APP_URL = os.environ.get("APP_URL", "").strip()
 MAX_WAIT = 120000
-EXPECTED_VERSION = __import__("version").__version__ if str(ROOT) in sys.path else None
 sys.path.insert(0, str(ROOT))
 from version import __version__
 
