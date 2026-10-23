@@ -266,3 +266,8 @@ print(cross_val_score(pipeline, X, y, cv=cv, scoring="f1_macro"))
 - https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
 
 訓練核心與 MCP 本機連接不需要 OpenAI API key。直接使用網頁時不呼叫 AI；使用 ChatGPT 操作時，工具回傳的欄位、摘要與結果會進入對話，依 ChatGPT 的存取與資料設定處理。
+
+
+## Web Crawler + Agent Router
+
+Open the sidebar pages **網路爬蟲** and **Agent 自動分流**. Independent capabilities let the router choose CSV inspection (tables) or text inspection (articles). Training requires a target and separate approval. See [Agent docs](docs/AI_AGENT.md).
