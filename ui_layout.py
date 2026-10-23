@@ -17,6 +17,7 @@ CRAWLER_HEADING = "🌐 網頁資料擷取"
 ROUTER_HEADING = "🧭 Agent 工具自動分流"
 CORE_HEADING = "🧠 Agent Core 2.0"
 CORE3_HEADING = "🧠 Agent Core 3.0"
+RESEARCH_HEADING = "🔎 網路研究與多媒體工具"
 
 PAGE_CSS = """
 <style>
@@ -149,6 +150,10 @@ def render_hub_directory() -> None:
         (
             "🧠 Agent Core 3.0", "pages/6_Agent_Core_3.py",
             "多來源工作流、結果導向下一步、失敗重試與完整工具紀錄。",
+        ),
+        (
+            "🔎 Research & Media", "pages/7_Research_Media.py",
+            "搜尋公開網路、擷取研究來源、讀取 PDF／圖片／字幕與語音，管理本機排程。",
         ),
     ]
     for start in range(0, len(modules), 2):
