@@ -20,7 +20,7 @@ from playwright.sync_api import sync_playwright
 # Import labels from the shared UI module for version-safe browser assertions.
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from ui_layout import HOME_HEADING, AGENT_HEADING, CHAT_HEADING, CRAWLER_HEADING, ROUTER_HEADING
+from ui_layout import HOME_HEADING, AGENT_HEADING, CHAT_HEADING, CRAWLER_HEADING, ROUTER_HEADING, CORE_HEADING
 
 
 def find_free_port():
@@ -79,6 +79,7 @@ def run_browser(base):
                         ("AI Chat", CHAT_HEADING),
                         ("Web Crawler", CRAWLER_HEADING),
                         ("Agent Router", ROUTER_HEADING),
+                        ("Agent Core", CORE_HEADING),
                     ):
                         link = nav.get_by_role("link", name=re.compile(label)).first
                         link.wait_for(state="attached", timeout=10000)
