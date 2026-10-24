@@ -168,6 +168,9 @@ def test_conversation(page, base):
     app.get_by_role('heading', name='對話與多來源工作區', exact=True).wait_for(timeout=30000)
     app.locator('[data-testid="stFileUploader"] input[type="file"]').set_input_files([
         str(ROOT / 'samples/demo_churn.csv'), str(ROOT / 'samples/demo_housing.csv')])
+    # set_input_files returns before Community Cloud finishes receiving files.
+    # Wait for the server-rendered count before submitting another widget event.
+    app.get_by_text('已接收 2 份檔案，可按「開始任務」處理。', exact=True).wait_for(timeout=MAX_WAIT)
     app.get_by_role('textbox', name='這次要完成的目標', exact=True).fill('整理兩份資料的概況')
     app.get_by_role('button', name='開始任務', exact=True).click()
     app.get_by_text('目前工作區共有 2 個可用來源', exact=False).first.wait_for(timeout=30000)

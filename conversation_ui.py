@@ -32,6 +32,8 @@ def render_conversation(*, openai_key='', brave_key=''):
                              type=['csv','tsv','pdf','png','jpg','jpeg','webp','gif',
                                    'wav','mp3','mp4','m4a','webm','srt','vtt'],
                              key=f'conversation_files_{epoch}')
+    if files:
+        st.caption(f'已接收 {len(files)} 份檔案，可按「開始任務」處理。')
     use_ai = st.checkbox('使用 AI 自主規劃與整合（需要 OpenAI Key）',
                          value=bool(openai_key), key='conversation_use_ai')
     allow_web = st.checkbox('允許本輪查詢公開網站與行情', value=True, key='conversation_allow_web')

@@ -2,7 +2,7 @@ name: CSV and Agent end-to-end acceptance
 on:
   pull_request:
   push:
-    branches: [main, fix/cloud-conversation-upload]
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
