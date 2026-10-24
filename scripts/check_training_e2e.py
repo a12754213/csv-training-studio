@@ -168,6 +168,9 @@ def test_conversation(page, base):
     app.get_by_role('heading', name='對話與多來源工作區', exact=True).wait_for(timeout=30000)
     app.locator('[data-testid="stFileUploader"] input[type="file"]').set_input_files([
         str(ROOT / 'samples/demo_churn.csv'), str(ROOT / 'samples/demo_housing.csv')])
+    # set_input_files returns before Community Cloud finishes receiving files.
+    # Wait for the server-rendered count before submitting another widget event.
+    app.get_by_text('已接收 2 份檔案，可按「開始任務」處理。', exact=True).wait_for(timeout=MAX_WAIT)
     app.get_by_role('textbox', name='這次要完成的目標', exact=True).fill('整理兩份資料的概況')
     app.get_by_role('button', name='開始任務', exact=True).click()
     app.get_by_text('目前工作區共有 2 個可用來源', exact=False).first.wait_for(timeout=30000)
@@ -202,6 +205,17 @@ def run_suite(base):
                 test_chat_without_api(page, base)
                 test_conversation(page, base)
             print(f"PASS: Full end-to-end browser acceptance v{__version__} at {base}", flush=True)
+        except Exception:
+            # This suite only submits synthetic repository samples and no keys.
+            # Keep the actual visible failure state so upload/rerun races can be
+            # distinguished from application errors without logging page source.
+            for frame in page.frames:
+                try:
+                    visible = frame.locator('body').inner_text(timeout=5000)
+                    print('FAILURE VISIBLE UI: ' + ' '.join(visible.split())[-8000:], flush=True)
+                except Exception:
+                    pass
+            raise
         finally:
             context.close()
             browser.close()
