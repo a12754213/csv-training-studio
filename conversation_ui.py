@@ -4,7 +4,7 @@ import json
 import pandas as pd
 import streamlit as st
 from agent_workspace import (Attachment, Workspace, WorkspaceError, run_agent_turn,
-                             collect_turn, snapshot, markdown_report)
+                             collect_turn, snapshot, markdown_report, safe_markdown)
 
 LABELS = {'model.plan': '模型正在規劃下一步', 'outline_task': '安排工作計畫',
           'search_web': '搜尋公開來源', 'read_web': '讀取並檢查來源',
@@ -83,13 +83,13 @@ def render_conversation(*, openai_key='', brave_key=''):
         if not workspace.sources:
             st.info('尚未取得來源；請補上檔案／網址，或設定搜尋金鑰。')
         for source in workspace.sources:
-            with st.expander(f"[{source['id']}] {source.get('title') or source.get('url') or source['key']}", expanded=True):
+            with st.expander(f"[{source['id']}] {safe_markdown(source.get('title') or source.get('url') or source['key'])}", expanded=True):
                 retrieved = pd.Timestamp(source['retrieved_at']).tz_convert('Asia/Taipei').strftime('%Y-%m-%d %H:%M')
                 st.caption('狀態：' + source.get('status','unknown') + ' · 取得時間（台灣）：' + retrieved)
                 if source.get('url'):
-                    st.write(source['url'])
+                    st.link_button('開啟來源', source['url'])
                     st.caption(source.get('source_class','公開來源'))
-                    st.caption('來源標示的發表日期：' + (source.get('published_at') or '未提供'))
+                    st.caption('來源標示的發表日期：' + safe_markdown(source.get('published_at') or '未提供'))
                 for url in source.get('source_urls', []):
                     st.write(url)
                 if source.get('status') == 'unavailable':

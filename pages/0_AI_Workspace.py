@@ -163,7 +163,7 @@ if result:
             st.info("已整理來源摘錄與表格。若需要 AI 綜合解讀，填入 OpenAI Key 並開啟 AI 報告後重新分析。")
             for source in sources:
                 if source.get("status") == "completed":
-                    st.write(source.get("title") or source["url"])
+                    st.text(source.get("title") or source["url"])
                     st.text(source.get("text_preview", ""))
         if result["kind"] == "csv":
             st.write(f"已讀取 {data['rows']:,} 列、{len(data['columns'])} 欄。")

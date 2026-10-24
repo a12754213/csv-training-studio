@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import hashlib
+import html
 import json
 import re
 from urllib.parse import urlsplit
@@ -34,6 +35,11 @@ class WorkspaceError(ValueError):
 
 def now():
     return datetime.now(timezone.utc).isoformat()
+
+
+def safe_markdown(text):
+    """Keep report formatting without automatic external images or raw HTML."""
+    return re.sub(r'\\*!\[', lambda _: r'\![', html.escape(str(text), quote=False))
 
 
 @dataclass(frozen=True)
@@ -114,10 +120,10 @@ def markdown_report(workspace):
     latest = next((x['content'] for x in reversed(workspace.messages) if x['role'] == 'assistant'), '')
     lines = ['# AI Agent 研究紀錄', '', latest, '', '## 來源與限制', '']
     for source in workspace.sources:
-        lines.append(f"- [{source['id']}] {source.get('title') or source.get('url') or source['key']}"
+        lines.append(f"- [{source['id']}] {safe_markdown(source.get('title') or source.get('url') or source['key'])}"
                      f" · {source.get('status')} · 取得於 {source.get('retrieved_at')}")
         if source.get('url'):
-            lines.append('  ' + source['url'])
+            lines.append('  ' + safe_markdown(source['url']))
         for url in source.get('source_urls', []):
             lines.append('  ' + url)
     lines += ['', '來源編號只代表實際取得的資料；不等於事實已被獨立查核。']
@@ -216,7 +222,7 @@ class Executor:
         if name == 'outline_task':
             if not 1 <= len(args['steps']) <= 6 or any(not x.strip() for x in args['steps']):
                 raise WorkspaceError('工作計畫需一至六個明確步驟。')
-            self.state.plan = args['steps']
+            self.state.plan = [safe_markdown(step) for step in args['steps']]
             out = {'plan': self.state.plan}
         elif name == 'search_web':
             if self.searches >= 3 or not self.brave_key:
@@ -468,6 +474,7 @@ def run_agent_turn(workspace, instruction, *, openai_key, brave_key='', allow_fi
         terminal = {'status': 'partial' if workspace.sources else 'failed',
                     'answer': message + ' 已取得的來源保留在下方。'}
     terminal = _clean(terminal, (openai_key, brave_key))
+    terminal['answer'] = safe_markdown(terminal['answer'])
     workspace.messages.append({'role': 'assistant', 'content': terminal['answer'], 'status': terminal['status']})
     workspace.messages = workspace.messages[-12:]
     return terminal

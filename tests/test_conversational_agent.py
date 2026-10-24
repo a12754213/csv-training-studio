@@ -11,7 +11,7 @@ from streamlit.testing.v1 import AppTest
 from agent_hub import AgentContext, AgentRegistry, Capability
 from agent_modules import build_registry
 from agent_workspace import (Attachment, Workspace, WorkspaceError, Executor, run_agent_turn,
-                             collect_turn, snapshot, markdown_report, MAX_ACTIONS)
+                             collect_turn, snapshot, markdown_report, MAX_ACTIONS, safe_markdown)
 from agent_llm import respond, ModelError, NoRedirect
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,6 +43,18 @@ def finish(answer='已根據來源整理 [S1]', citations=None):
 
 
 class AgentWorkflowTests(unittest.TestCase):
+    def test_model_reports_and_plans_cannot_embed_remote_images_or_html(self):
+        attack = '![image](https://example.org/collect) <img src="https://example.org/collect">'
+        self.assertEqual(safe_markdown(r'\![image](url)'), r'\![image](url)')
+        state=Workspace();file=Attachment('data.csv',b'x,y\n1,a\n2,b\n');state.add_files([file])
+        model=ScriptedModel([('outline_task',{'steps':[attack]}),
+                             ('inspect_file',{'file_id':file.id}),finish(attack+' [S1]')])
+        out=run_agent_turn(state,'整理資料',openai_key='openai-private',model_call=model)
+        self.assertIn(r'\![',out['answer'])
+        self.assertIn('&lt;img',out['answer'])
+        self.assertNotIn('<img',markdown_report(state))
+        self.assertIn(r'\![',state.plan[0])
+
     def test_model_replans_after_source_failure_and_integrates_two_csv_files(self):
         state = Workspace()
         files = [Attachment('a.csv', b'item,value\na,10\nb,20\n'),
