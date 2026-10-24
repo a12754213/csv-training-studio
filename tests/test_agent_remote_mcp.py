@@ -41,6 +41,18 @@ class RemoteMCPTests(unittest.TestCase):
         self.assertEqual(asyncio.run(invoke(gate, token=secret, origin="https://chatgpt.com")), 200)
         self.assertEqual(asyncio.run(invoke(gate, token=secret, size=100000)), 413)
 
+    def test_market_and_research_tools_are_read_only_and_registered(self):
+        from unittest.mock import patch
+        from tests.test_market_workspace import prices
+        _, server = build_remote_mcp("b" * 48)
+        catalog = asyncio.run(server.list_tools())
+        by_name = {t.name: t for t in catalog}
+        for name in ("analyze_twse_stock", "research_public_topic"):
+            self.assertTrue(by_name[name].annotations.readOnlyHint)
+        with patch("agent_modules.market_tools.fetch_prices", return_value=prices()):
+            result = asyncio.run(server.call_tool("analyze_twse_stock", {"symbol": "2330"}))
+        self.assertIsNotNone(result)
+
     def test_remote_app_build_does_not_start_server(self):
         app, server = build_remote_mcp("b" * 48)
         self.assertIsInstance(app, TokenASGI)

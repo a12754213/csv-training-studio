@@ -67,11 +67,13 @@ def main():
                         "and reboot/redeploy in Streamlit Cloud dashboard.")
                 app.get_by_text(f"AI Agent Hub · 程式版本 v{__version__}", exact=True).wait_for(
                     state="visible", timeout=15000)
-                for section in ("AI Agent", "AI Chat", "Web Crawler", "Agent Router", "Agent Core", "Agent Core 3", "Research Media"):
+                for section in ("AI 任務", "CSV 訓練", "網路與多媒體", "資料分析 Agent", "CSV 自然語言規劃", "單一網頁擷取", "工具分流", "Core 2.0", "Core 3.0"):
                     # Multipage navigation may be collapsed on narrow screens.
                     # Check the sidebar link text on the desktop smoke viewport.
                     if app.get_by_text(section, exact=True).count() == 0:
                         raise RuntimeError(f"Missing deployed Agent navigation: {section}")
+                app.get_by_role("button", name="開始分析", exact=True).wait_for(state="visible", timeout=10000)
+                app.get_by_role("link", name="CSV 訓練", exact=True).click(timeout=10000)
                 app.get_by_role("tab", name="2 · 整理與切分").click(timeout=10000)
                 app.get_by_text("不參與訓練的欄位", exact=True).wait_for(
                     state="visible", timeout=10000)

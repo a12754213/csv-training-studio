@@ -77,7 +77,26 @@ def build_remote_mcp(token: str, *, allowed_origins: set[str] | None = None):
     def list_public_agent_tools() -> list[dict[str, Any]]:
         """List the fixed public read-only capabilities (not local training tools)."""
         return [x for x in build_registry().available() if x["name"] in
-                {"web.crawl", "text.inspect", "csv.inspect", "csv.plan"}]
+                {"web.crawl", "web.search", "market.twse", "text.inspect", "csv.inspect", "csv.plan"}]
+
+    @server.tool(annotations=REMOTE_READ, structured_output=True)
+    def analyze_twse_stock(symbol: str = "2330", months: int = 6) -> dict[str, Any]:
+        """Analyze authorized TWSE daily prices; no training or trading."""
+        from agent_hub import AgentContext
+        from agent_modules.market_tools import fetch_prices, analyze_prices
+        prices = fetch_prices(AgentContext(), {"symbol": symbol, "months": months})
+        return {"prices": prices, "analysis": analyze_prices(prices)}
+
+    @server.tool(annotations=REMOTE_READ, structured_output=True)
+    def research_public_topic(query: str) -> dict[str, Any]:
+        """Authorized bounded research: search and read at most three public results.
+
+        Requires server BRAVE_SEARCH_API_KEY. No external LLM upload or training.
+        """
+        from agent_supervisor import plan_task, run_task
+        return run_task(plan_task(query), build_registry(),
+                        brave_key=os.environ.get("BRAVE_SEARCH_API_KEY", ""),
+                        approved_read=True, approved_follow=True)
 
     @server.tool(annotations=REMOTE_READ, structured_output=True)
     def search_public_web(query: str, count: int = 5) -> dict[str, Any]:

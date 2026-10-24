@@ -1,11 +1,11 @@
 """Opt-in public search and bounded research tools, independent of CSV/AutoML.
 
-Search results are NOT automatically crawled. Callers must display and approve
-the exact selected URLs before dispatching web.crawl.
+Callers may approve exact URLs or a bounded automatic research task.
 """
 from __future__ import annotations
 import json
 import re
+from datetime import datetime, timezone
 from urllib import error, parse, request
 from urllib.parse import urlsplit
 
@@ -75,9 +75,13 @@ def search(context: AgentContext, params: dict) -> dict:
         url = doc.get("url", "")
         if not isinstance(url, str) or not url.startswith(("https://", "http://")):
             continue
-        parts = urlsplit(url)
-        if (not parts.hostname or parts.username or parts.password
-                or parts.fragment or parts.scheme != "https" or parts.port not in (None, 443)):
+        try:
+            parts = urlsplit(url)
+            invalid = (not parts.hostname or parts.username or parts.password
+                       or parts.fragment or parts.scheme != "https" or parts.port not in (None, 443))
+        except ValueError:
+            continue
+        if invalid:
             continue
         if url in seen:
             continue
@@ -102,13 +106,21 @@ def research_selected(context: AgentContext, params: dict) -> dict:
     from agent_modules.web_crawler import crawl
     output = []
     for url in urls:
-        _destination(url)
         try:
+            _destination(url)
             doc = crawl(AgentContext(), {"url": url})
-            output.append({"url": doc["url"], "kind": doc["kind"], "title": doc["title"],
+            item = {"url": doc["url"], "kind": doc["kind"], "title": doc["title"],
                            "text_preview": doc["text"][:1800],
                            "rows": doc["rows"], "columns": doc["columns"],
-                           "status": "completed"})
+                           "retrieved_at": datetime.now(timezone.utc).isoformat(),
+                           "status": "completed"}
+            if doc.get("csv_bytes"):
+                from preprocessing import read_csv_bytes, numeric_summary
+                frame, _ = read_csv_bytes(doc["csv_bytes"])
+                item["table_csv"] = frame.to_csv(index=False)
+                item["numeric_summary"] = json.loads(numeric_summary(frame).to_json(orient="records"))
+                item["text_preview"] += "\n表格前五筆：\n" + frame.head(5).to_csv(index=False)[:1200]
+            output.append(item)
         except ValueError:
             output.append({"url": url, "status": "unavailable"})
     return {"sources": output, "count": len(output),
@@ -151,7 +163,7 @@ def synthesize(context: AgentContext, params: dict) -> dict:
                           method="POST", headers={"Authorization": "Bearer " + key,
                                                   "Content-Type": "application/json"})
     try:
-        with request.urlopen(req, timeout=45) as response:
+        with request.build_opener(_NoRedirect()).open(req, timeout=45) as response:
             reply = json.load(response)
         texts = [seg["text"] for msg in reply.get("output", [])
                  if msg.get("type") == "message" for seg in msg.get("content", [])

@@ -92,6 +92,7 @@ def click_selectbox_option(frame, label, option):
 
 def test_home_training(page, url, directory):
     frame = open_page(page, url, HEADING)
+    frame = open_page(page, get_nav_url(frame, "CSV 訓練"), "📊 CSV / AutoML 訓練工作區")
     version = frame.get_by_text(f"AI Agent Hub · 程式版本 v{__version__}", exact=True)
     version.wait_for(state="visible", timeout=20000)
     frame.get_by_role("tab", name="2 · 整理與切分").click()
@@ -110,11 +111,12 @@ def test_home_training(page, url, directory):
 
 def test_uploaded_csv(page, url):
     frame = open_page(page, url, HEADING)
+    frame = open_page(page, get_nav_url(frame, "CSV 訓練"), "📊 CSV / AutoML 訓練工作區")
     # In Streamlit 1.66 radio options are labeled; switching sources shows input.
     frame.get_by_text("上傳我的 CSV", exact=True).first.click(timeout=20000)
     frame.locator('[data-testid="stFileUploader"] input[type="file"]').set_input_files(str(SAMPLE))
     frame.get_by_text("demo_churn.csv", exact=False).first.wait_for(state="visible", timeout=MAX_WAIT)
-    frame.get_by_role("heading", name=HEADING).wait_for(state="visible")
+    frame.get_by_role("heading", name="📊 CSV / AutoML 訓練工作區").wait_for(state="visible")
     assert_clean(frame, "CSV upload")
     print("PASS: public CSV file upload parsed without error", flush=True)
 
@@ -132,7 +134,7 @@ def get_nav_url(frame, label):
 
 def test_agent(page, url, directory):
     frame = open_page(page, url, HEADING)
-    agent_url = get_nav_url(frame, "AI Agent")
+    agent_url = get_nav_url(frame, "資料分析 Agent")
     frame = open_page(page, agent_url, AGENT_HEADING)
     frame.locator('[data-testid="stFileUploader"] input[type="file"]').set_input_files(str(SAMPLE))
     frame.get_by_text("資料品質與欄位分析").wait_for(state="visible", timeout=MAX_WAIT)
@@ -147,7 +149,7 @@ def test_agent(page, url, directory):
 
 def test_chat_without_api(page, url):
     frame = open_page(page, url, HEADING)
-    chat_url = get_nav_url(frame, "AI Chat")
+    chat_url = get_nav_url(frame, "CSV 自然語言規劃")
     frame = open_page(page, chat_url, CHAT_HEADING)
     frame.locator('[data-testid="stFileUploader"] input[type="file"]').set_input_files(str(SAMPLE))
     chat = frame.get_by_test_id("stChatInput").locator("textarea")

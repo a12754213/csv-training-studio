@@ -1,3 +1,5 @@
+> v3.2 已新增統一首頁、台股日成交分析與回測、資料交接、來源失敗處理。請先看 [最新使用與設定](QUICKSTART_AGENT.md)。以下為多媒體、動態瀏覽器、排程及遠端連線的既有說明；這些環境需求仍適用。
+
 # AI Agent Hub v3.1.0 — Research / Media / Memory / Scheduling
 
 此版以 **獨立工具、最小權限、明確核准** 方式擴充 v3.0.0。不是「AI 能不受限制地操作任何網站」，也不是 ChatGPT 帳號已自動完成連接。
@@ -20,7 +22,7 @@
 
 **自然語言跨工具分派器**：Research & Media 上方可輸入中文要求，`agent_supervisor.plan_task` 會依明確網址、上傳副檔名及請求文字選擇 `web.search`、`web.research_selected`、`document.pdf`、`image.inspect`／`image.describe`、`audio.transcribe`、`csv.inspect`、YouTube 資訊／字幕等既有工具。使用者可一次核准搜尋並明確選擇允許自動讀取前三個搜尋結果；外部傳送檔案／文字另外核准。這是**受控的有限任務分派器**，不是能自由執行任意程式或自行登入各個網站的 Agent。
 
-首頁會出現第八個模組頁面「Research & Media」。其他原有 CSV／AutoML／Core 2.0／Core 3.0 不變。
+新版從左側「網路與多媒體」進入；CSV／AutoML 獨立為 CSV 訓練，Core 2.0／3.0 保留在進階工具。
 
 ## 選用依賴
 

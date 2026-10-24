@@ -13,6 +13,7 @@ from urllib.parse import urlsplit
 from agent_core import _provided_urls
 from agent_hub import AgentContext, AgentRegistry
 from agent_modules.video_tools import youtube_id, VideoError
+from agent_modules.market_tools import resolve_symbol, analyze_prices
 
 
 class SupervisorError(ValueError):
@@ -27,6 +28,7 @@ class TaskPlan:
     urls: tuple[str, ...] = ()
     filename: str = ""
     requires_external: bool = False
+    symbol: str = ""
 
 
 def plan_task(instruction: str, *, filename: str = "", upload_present: bool = False) -> TaskPlan:
@@ -42,7 +44,7 @@ def plan_task(instruction: str, *, filename: str = "", upload_present: bool = Fa
         elif name.endswith(".pdf"):
             kind, tools = "pdf", ("document.pdf",)
         elif name.endswith((".png", ".jpg", ".jpeg", ".webp", ".gif")):
-            semantic = any(w in instruction.lower() for w in ("辨識", "描述", "內容", "vision", "describe"))
+            semantic = any(w in instruction.lower() for w in ("辨識", "描述", "內容", "分析", "vision", "describe"))
             kind, tools = "image", (("image.describe",) if semantic and not name.endswith(".gif")
                                     else ("image.inspect",))
         elif name.endswith((".srt", ".vtt")):
@@ -58,7 +60,7 @@ def plan_task(instruction: str, *, filename: str = "", upload_present: bool = Fa
             try:
                 youtube_id(urls[0])
                 wants_subtitle = any(k in instruction.lower() for k in
-                                     ("字幕", "逐字", "transcript", "captions"))
+                                     ("字幕", "逐字", "分析", "總結", "重點", "transcript", "captions", "summary"))
                 return TaskPlan("youtube", instruction,
                                 ("video.youtube_transcript",) if wants_subtitle else
                                 ("video.youtube_info",), urls=(urls[0],))
@@ -66,9 +68,14 @@ def plan_task(instruction: str, *, filename: str = "", upload_present: bool = Fa
                 pass
         if any(urlsplit(u).scheme not in ("http", "https") for u in urls):
             raise SupervisorError("只接受 HTTP(S) 網址。")
+        if len(urls) == 1 and any(w in instruction.lower() for w in ("動態", "javascript", "playwright")):
+            return TaskPlan("browser", instruction, ("web.render",), urls=tuple(urls))
         return TaskPlan("web", instruction, ("web.research_selected",), urls=tuple(urls))
     if len(instruction.strip()) > 300:
         raise SupervisorError("搜尋任務請縮短至 300 字以內。")
+    symbol = resolve_symbol(instruction)
+    if symbol and any(w in instruction.lower() for w in ("股價", "股票", "趨勢", "走勢", "stock", "price", "預測")):
+        return TaskPlan("market", instruction, ("market.twse", "web.search", "web.research_selected"), symbol=symbol)
     return TaskPlan("search", instruction, ("web.search", "web.research_selected"))
 
 
@@ -76,7 +83,8 @@ def run_task(plan: TaskPlan, registry: AgentRegistry, *,
              upload: bytes | None = None, filename: str = "",
              brave_key: str = "", openai_key: str = "",
              approved_read=False, approved_follow=False,
-             approved_external_upload=False, approved_report=False) -> dict:
+             approved_external_upload=False, approved_report=False,
+             months=6, progress=None) -> dict:
     """Execute a pre-reviewed plan; only bounded registered skill handlers."""
     if not isinstance(plan, TaskPlan):
         raise SupervisorError("必須先建立任務計畫。")
@@ -84,44 +92,81 @@ def run_task(plan: TaskPlan, registry: AgentRegistry, *,
         raise PermissionError("必須先核准讀取上傳檔案或外部網路。")
     ctx = AgentContext(payload=upload or b"", filename=filename or plan.filename)
     audit = []
+    warnings = []
+    def step(name):
+        audit.append(name)
+        if progress:
+            progress(name)
     data = None
-    if plan.kind == "search":
-        if not isinstance(brave_key, str) or len(brave_key) < 8:
-            raise SupervisorError("網路搜尋需要 Brave Search API Key。")
-        audit.append("web.search")
-        found = registry.run("web.search", AgentContext(), {
-            "query": plan.instruction, "api_key": brave_key, "count": 5}, approved=True)
-        data = {"search": found}
+    if plan.kind == "market":
+        step("market.twse")
+        prices = registry.run("market.twse", AgentContext(),
+                              {"symbol": plan.symbol, "months": months}, approved=True)
+        data = {"prices": prices, "analysis": analyze_prices(prices)}
+        warnings.extend(prices.get("warnings", []))
+        if not brave_key:
+            warnings.append("未設定 Brave Search API Key：已完成股價統計，尚未搜尋新聞與基本面來源。")
+    if plan.kind == "search" or (plan.kind == "market" and brave_key):
+        step("web.search")
+        try:
+            if not isinstance(brave_key, str) or len(brave_key) < 8:
+                raise SupervisorError("網路搜尋需要 Brave Search API Key。")
+            found = registry.run("web.search", AgentContext(), {
+                "query": plan.instruction, "api_key": brave_key, "count": 5}, approved=True)
+        except (ValueError, RuntimeError, OSError):
+            if plan.kind != "market":
+                raise
+            found = {"results": [], "count": 0}
+            warnings.append("新聞搜尋失敗，已保留證交所股價分析；請檢查搜尋金鑰與額度。")
+        data = {**(data or {}), "search": found}
         if approved_follow:
             urls = [x["url"] for x in found.get("results", [])[:3]]
             if urls:
-                audit.append("web.research_selected")
+                step("web.research_selected")
                 data["research"] = registry.run("web.research_selected", AgentContext(),
                                                 {"urls": urls}, approved=True)
     elif plan.kind == "web":
-        audit.append("web.research_selected")
+        step("web.research_selected")
         data = registry.run("web.research_selected", AgentContext(),
                             {"urls": list(plan.urls)}, approved=True)
-    elif plan.kind == "youtube":
-        audit.append(plan.tools[0])
+    elif plan.kind in ("youtube", "browser"):
+        step(plan.tools[0])
         data = registry.run(plan.tools[0], AgentContext(),
                             {"url": plan.urls[0]}, approved=True)
-    else:
+    elif plan.kind not in ("market", "search"):
         if upload is None or not upload:
             raise SupervisorError("任務預期的檔案不存在。")
         tool = plan.tools[0]
         if tool in ("audio.transcribe", "image.describe") and not approved_external_upload:
             raise PermissionError("外部視覺／音訊模型必須另行核准將檔案傳給 OpenAI。")
         params = {"api_key": openai_key} if tool in ("audio.transcribe", "image.describe") else {}
-        audit.append(tool)
+        step(tool)
         data = registry.run(tool, ctx, params, approved=approved_external_upload)
     if approved_report and openai_key:
         sources = (data.get("research") or data).get("sources") if isinstance(data, dict) else None
         if isinstance(sources, list):
-            audit.append("web.synthesize")
-            report = registry.run("web.synthesize", AgentContext(), {
-                "api_key": openai_key, "query": plan.instruction, "sources": sources}, approved=True)
-            data = {"data": data, "report": report}
+            if any(s.get("status") == "completed" for s in sources):
+                step("web.synthesize")
+                try:
+                    report = registry.run("web.synthesize", AgentContext(), {
+                        "api_key": openai_key, "query": plan.instruction, "sources": sources}, approved=True)
+                    data = {"data": data, "report": report}
+                except (ValueError, RuntimeError, OSError):
+                    warnings.append("AI 報告產生失敗；已保留成功取得的來源與分析，請檢查 OpenAI 金鑰與額度。")
+    raw = data.get("data", data) if isinstance(data, dict) else {}
+    sources = (raw.get("research") or raw).get("sources", [])
+    if any(s.get("status") != "completed" for s in sources):
+        warnings.append("部分來源無法擷取，未納入報告。")
+    if plan.kind == "market" and brave_key and not sources and approved_follow:
+        warnings.append("尚未取得可用新聞原文，股價統計仍可查看。")
+    status = "completed"
+    if warnings:
+        status = "partial"
+    if plan.kind in ("search", "web"):
+        if (approved_follow or plan.kind == "web") and not any(s.get("status") == "completed" for s in sources):
+            status = "no_sources"
+        elif plan.kind == "search" and not raw.get("search", {}).get("results"):
+            status = "no_sources"
     if len(audit) > 4:
         raise SupervisorError("任務執行超過工具數量上限。")
-    return {"status": "completed", "kind": plan.kind, "trace": audit, "result": data}
+    return {"status": status, "kind": plan.kind, "trace": audit, "result": data, "warnings": warnings}
