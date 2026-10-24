@@ -87,7 +87,7 @@ def render_conversation(*, openai_key='', brave_key=''):
                 retrieved = pd.Timestamp(source['retrieved_at']).tz_convert('Asia/Taipei').strftime('%Y-%m-%d %H:%M')
                 st.caption('狀態：' + source.get('status','unknown') + ' · 取得時間（台灣）：' + retrieved)
                 if source.get('url'):
-                    st.link_button('開啟來源', source['url'])
+                    st.link_button('開啟來源 ' + source['id'], source['url'])
                     st.caption(source.get('source_class','公開來源'))
                     st.caption('來源標示的發表日期：' + safe_markdown(source.get('published_at') or '未提供'))
                 for url in source.get('source_urls', []):
