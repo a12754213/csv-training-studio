@@ -202,6 +202,17 @@ def run_suite(base):
                 test_chat_without_api(page, base)
                 test_conversation(page, base)
             print(f"PASS: Full end-to-end browser acceptance v{__version__} at {base}", flush=True)
+        except Exception:
+            # This suite only submits synthetic repository samples and no keys.
+            # Keep the actual visible failure state so upload/rerun races can be
+            # distinguished from application errors without logging page source.
+            for frame in page.frames:
+                try:
+                    visible = frame.locator('body').inner_text(timeout=5000)
+                    print('FAILURE VISIBLE UI: ' + ' '.join(visible.split())[-8000:], flush=True)
+                except Exception:
+                    pass
+            raise
         finally:
             context.close()
             browser.close()
