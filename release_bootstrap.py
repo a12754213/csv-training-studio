@@ -46,6 +46,12 @@ def ensure_current_release() -> str:
                 module = sys.modules.get(name)
                 if module is not None:
                     importlib.reload(module)
+            # Stable training modules keep their classes, but exported report
+            # metadata must identify the release now on disk.
+            for name in ("preprocessing", "forecasting", "training_service", "automl"):
+                module = sys.modules.get(name)
+                if module is not None and hasattr(module, "__version__"):
+                    module.__version__ = expected
         if version.__version__ != expected:
             raise RuntimeError("程式更新尚未載入完成，請在 Streamlit 管理介面重新啟動。")
         return expected
