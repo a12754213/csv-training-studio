@@ -24,6 +24,7 @@ _MODULES = (
     "agent_llm",
     "agent_workspace",
     "conversation_ui",
+    "forecast_ui",
     "ui_layout",
 )
 

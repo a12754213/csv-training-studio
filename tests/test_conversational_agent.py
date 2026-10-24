@@ -267,6 +267,24 @@ class ConversationUITests(unittest.TestCase):
         self.assertFalse(app.exception)
         self.assertFalse(app.session_state['conversation_workspace'].sources)
 
+    def test_time_series_handoff_preserves_future_intent_without_training(self):
+        app=AppTest.from_file(str(ROOT/'pages/8_CSV_Workspace.py'),default_timeout=30)
+        app.session_state['workspace_dataset']={
+            'name':'forecast.csv','payload':(ROOT/'samples/demo_timeseries.csv').read_bytes(),
+            'plan':{'task':'time_series','target':'銷量','time_column':'日期','lookback':7,'horizon':3}}
+        app.run()
+        self.assertFalse(app.exception)
+        self.assertTrue(next(r for r in app.radio if r.label=='訓練模式').value.startswith('時間序列'))
+        self.assertEqual(next(s for s in app.selectbox if s.label=='時間欄位').value,'日期')
+        self.assertEqual(next(s for s in app.selectbox if s.label=='未來要預測的數值欄').value,'銷量')
+        self.assertEqual(next(n for n in app.number_input if n.label=='預測未來第幾筆').value,3)
+        self.assertNotIn('forecast_trained',app.session_state)
+        next(b for b in app.button if b.label=='建立時間序列資料').click().run()
+        self.assertFalse(app.exception)
+        self.assertFalse(app.error)
+        self.assertEqual(app.session_state['forecast_data'].config.horizon,3)
+        self.assertEqual(app.session_state['forecast_data'].config.lookback,7)
+
     def test_ai_mode_missing_key_is_explicit(self):
         app=self.app()
         app.checkbox(key='conversation_use_ai').check().run()
