@@ -404,8 +404,13 @@ def run_agent_turn(workspace, instruction, *, openai_key, brave_key='', allow_fi
                         allow_web=allow_web)
     manifest = {'initial_goal': workspace.objective,
                 'files': [{'id': f.id, 'name': f.name} for f in workspace.attachments.values()],
-                'available_sources': [{k: s.get(k) for k in ('id', 'title', 'url', 'kind', 'status')}
+                'available_sources': [{k: s.get(k) for k in ('id', 'title', 'url', 'kind', 'status', 'file_id')}
                                       for s in workspace.sources],
+                'previous_public_observations': [
+                    {k: (v[:1800] if isinstance(v, str) else v)
+                     for k, v in s.items() if k in ('id', 'title', 'url', 'status', 'text_preview',
+                                                   'statistics', 'as_of', 'published_at', 'retrieved_at')}
+                    for s in workspace.sources[-8:] if not s['key'].startswith('file:')],
                 'search_configured': bool(brave_key), 'file_content_sharing': allow_file_ai,
                 'web_queries_allowed': allow_web,
                 'supported_tools': [x['name'] for x in tool_specs()]}

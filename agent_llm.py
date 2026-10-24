@@ -22,7 +22,7 @@ def respond(api_key: str, instructions: str, inputs: list, tools: list) -> dict:
     if not isinstance(api_key, str) or len(api_key.strip()) < 8:
         raise ModelError('自主 Agent 需要你的 OpenAI API Key。', safe=True)
     body = {'model': DEFAULT_MODEL, 'instructions': instructions, 'input': inputs,
-            'tools': tools, 'parallel_tool_calls': False, 'store': False,
+            'tools': tools, 'tool_choice': 'required', 'parallel_tool_calls': False, 'store': False,
             'max_output_tokens': 1600, 'reasoning': {'effort': 'none'}}
     encoded = json.dumps(body, ensure_ascii=False).encode('utf-8')
     if len(encoded) > 180_000:

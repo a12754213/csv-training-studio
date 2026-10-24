@@ -74,6 +74,11 @@ class AgentWorkflowTests(unittest.TestCase):
         self.assertNotIn('openai-private',serialized)
         self.assertNotIn('brave-private',serialized)
         self.assertIn('[S2]',markdown_report(state))
+        followup = ScriptedModel([outline(), finish('沿用之前的公開資料比較 [S2]', ['S2'])])
+        run_agent_turn(state, '接著比較前面的公開資料', openai_key='openai-private',
+                       registry=reg, model_call=followup)
+        self.assertIn('A public report', json.dumps(followup.inputs))
+        self.assertEqual(len(state.sources), 4)
 
     def test_attachment_content_is_not_sent_without_consent_and_revocation_hides_old_answers(self):
         state = Workspace(); file = Attachment('private.csv', b'name,amount\nPRIVATE_ROW,19\n')
@@ -210,6 +215,7 @@ class ModelTransportTests(unittest.TestCase):
             respond('openai-private','instructions',[{'role':'user','content':'test'}],tool_specs())
         self.assertFalse(seen['body']['store'])
         self.assertFalse(seen['body']['parallel_tool_calls'])
+        self.assertEqual(seen['body']['tool_choice'], 'required')
         self.assertEqual(seen['body']['model'], 'gpt-6-luna')
         self.assertEqual(seen['body']['reasoning']['effort'], 'none')
         self.assertNotIn('openai-private',json.dumps(seen['body']))
