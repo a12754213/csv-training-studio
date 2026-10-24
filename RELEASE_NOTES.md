@@ -1,12 +1,9 @@
-# AI Agent Hub v3.2.1
+# AI Agent Hub v3.3.0
 
-統一首頁：自然語言任務 → 自動搜尋／讀取 → 圖表、來源與分析 → 接續 CSV 訓練。
-新增證交所上市股票日成交分析、Ridge／Random Forest 回測、Naive 對照與模型下載。
-既有 CSV、時間序列、爬蟲、多媒體、Core 與 MCP 工具保留。
+首頁新增「對話與多來源 Agent」：目標 → 模型規劃 → 逐步呼叫已註冊工具 → 引用來源報告；可接續追問，最多六份檔案與多個網址，並將選定資料帶入 CSV 訓練。
 
-自動搜尋需 Brave Search Key，AI 彙整／圖片理解／語音需 OpenAI Key。台股日成交與 CSV 不需 Key。
-動態瀏覽器、YouTube、持久排程和 ChatGPT 連接仍需依文件配置環境；不代表已替帳號啟用。
+提供無 Key 的整理來源模式、網路開關、附檔摘錄傳送選項、來源日期、Markdown／JSON 輸出與有限重試。原有 CSV、台股、爬蟲及進階工具保留。
 
-詳見 docs/QUICKSTART_AGENT.md 與 VALIDATION.md。
+自主模型需 OpenAI Key，搜尋需 Brave Key；真實帳戶呼叫尚未持有使用者金鑰驗收。OCR、完整影片視覺、跨裝置記憶、常駐背景工作及 ChatGPT 實際連接仍未完成。
 
-修正 Streamlit Cloud 更新原始碼後保留舊 Python 模組的問題；入口會刷新本次變更模組，並清除舊任務狀態。
+詳見 docs/CONVERSATIONAL_AGENT.md 與 VALIDATION.md。

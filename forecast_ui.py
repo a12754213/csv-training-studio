@@ -8,7 +8,8 @@ from forecasting import ForecastConfig, make_forecast_bundle, prepare_forecast, 
 from preprocessing import DataPreparationError, _identifier_name, profile_frame
 
 
-def render_forecast_ui(frame, digest, missing_tokens, settings_tab, output_tab):
+def render_forecast_ui(frame, digest, missing_tokens, settings_tab, output_tab, initial_options=None):
+    initial_options = initial_options or {}
     profile = profile_frame(frame, missing_tokens)
     guessed = profile.set_index('欄位')['推測類型'].to_dict()
     with settings_tab:
@@ -17,9 +18,13 @@ def render_forecast_ui(frame, digest, missing_tokens, settings_tab, output_tab):
         columns = list(frame.columns)
         time_options = ['（請選擇時間欄位）'] + columns
         default_time = next((c for c in columns if guessed[c] == 'datetime'), time_options[0])
+        if initial_options.get('time_column') in columns:
+            default_time = initial_options['time_column']
         time_col = st.selectbox('時間欄位', time_options, index=time_options.index(default_time), key=f'fc_time_{digest}')
         target_options = ['（請選擇預測目標）'] + [c for c in columns if c != time_col]
-        target = st.selectbox('未來要預測的數值欄', target_options, key=f'fc_target_{digest}_{time_col}')
+        target = st.selectbox('未來要預測的數值欄', target_options,
+                              index=target_options.index(initial_options['target']) if initial_options.get('target') in target_options else 0,
+                              key=f'fc_target_{digest}_{time_col}')
         available = [c for c in columns if c not in [time_col, target]]
         excluded = st.multiselect('不參與訓練的欄位', available,
                                   default=[c for c in available if _identifier_name(c)],
@@ -28,8 +33,10 @@ def render_forecast_ui(frame, digest, missing_tokens, settings_tab, output_tab):
                                key=f'fc_features_{digest}_{time_col}_{target}_{tuple(excluded)}')
         st.caption('目標欄過去的數值一定會使用；其他欄只有在上方選取後才會參與。所有欄位都只讀取預測起點以前已知的值。')
         a, b, c = st.columns(3)
-        lookback = int(a.number_input('歷史視窗（筆）', 1, 365, 14, key='fc_lookback'))
-        horizon = int(b.number_input('預測未來第幾筆', 1, 90, 1, key='fc_horizon'))
+        initial_lookback = initial_options.get('lookback', 14)
+        initial_horizon = initial_options.get('horizon', 1)
+        lookback = int(a.number_input('歷史視窗（筆）', 1, 365, max(1, min(365, int(initial_lookback))), key=f'fc_lookback_{digest}'))
+        horizon = int(b.number_input('預測未來第幾筆', 1, 90, max(1, min(90, int(initial_horizon))), key=f'fc_horizon_{digest}'))
         ratio = c.slider('最後多少 % 當測試資料', 10, 40, 20, step=5, key='fc_ratio') / 100
         model_options = {'Ridge｜線性基準': 'ridge', 'Random Forest｜非線性': 'random_forest', 'AutoML｜比較後選擇': 'auto'}
         local_lstm = os.environ.get('CSV_STUDIO_LOCAL') == '1' and importlib.util.find_spec('tensorflow') is not None

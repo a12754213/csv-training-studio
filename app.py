@@ -1,11 +1,23 @@
 """Unified entrypoint; existing tools keep independent engines."""
 import streamlit as st
-from release_bootstrap import ensure_current_release
+import hashlib
+import importlib
+from pathlib import Path
+import release_bootstrap
 
-runtime_release = ensure_current_release()
+# Cloud retains the bootstrap module too. Refresh its dependency list before
+# asking it to load this release; retain its lock across that refresh.
+with release_bootstrap._LOCK:
+    bootstrap_signature = hashlib.sha256(Path(release_bootstrap.__file__).read_bytes()).hexdigest()
+    if getattr(release_bootstrap, "_source_signature", None) != bootstrap_signature:
+        importlib.reload(release_bootstrap)
+        release_bootstrap._source_signature = bootstrap_signature
+    runtime_release = release_bootstrap.ensure_current_release()
+
 if st.session_state.get("_agent_runtime_release") != runtime_release:
     for key in ("nl_agent_plan", "nl_agent_result", "workspace_result", "workspace_error",
-                "workspace_backtest", "workspace_model_zip", "workspace_fp"):
+                "workspace_backtest", "workspace_model_zip", "workspace_fp",
+                "conversation_workspace", "conversation_result"):
         st.session_state.pop(key, None)
     st.session_state["_agent_runtime_release"] = runtime_release
 st.set_page_config(page_title="AI Agent Hub", page_icon="🤖", layout="wide")

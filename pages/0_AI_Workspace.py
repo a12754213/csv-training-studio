@@ -41,6 +41,12 @@ with st.sidebar:
     st.caption("台股日成交分析與 CSV 訓練不需 API Key。")
     st.caption(f"AI Agent Hub · 程式版本 v{__version__}")
 
+work_mode = st.radio("工作方式", ["快速分析", "對話與多來源 Agent"], horizontal=True, key="workspace_mode")
+if work_mode == "對話與多來源 Agent":
+    from conversation_ui import render_conversation
+    render_conversation(openai_key=openai, brave_key=brave)
+    st.stop()
+
 st.subheader("今天想完成什麼？")
 examples = ["分析台積電股價未來趨勢", "搜尋近期半導體新聞並整理來源", "分析我上傳的檔案"]
 for col, example in zip(st.columns(3), examples):
@@ -157,7 +163,7 @@ if result:
             st.info("已整理來源摘錄與表格。若需要 AI 綜合解讀，填入 OpenAI Key 並開啟 AI 報告後重新分析。")
             for source in sources:
                 if source.get("status") == "completed":
-                    st.write(source.get("title") or source["url"])
+                    st.text(source.get("title") or source["url"])
                     st.text(source.get("text_preview", ""))
         if result["kind"] == "csv":
             st.write(f"已讀取 {data['rows']:,} 列、{len(data['columns'])} 欄。")

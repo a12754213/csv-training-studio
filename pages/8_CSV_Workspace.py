@@ -70,12 +70,13 @@ with st.sidebar:
     st.caption(f"AI Agent Hub · 程式版本 v{__version__}")
 
 missing_tokens = tuple(x.strip() for x in token_text.split(",") if x.strip())
+incoming_plan = incoming.get("plan", {}) if incoming and source == "使用 AI 任務資料" else {}
 try:
     frame, file_info = read_csv_bytes(payload, encoding, separator)
 except (DataPreparationError, ValueError) as exc:
     st.error(str(exc)); st.stop()
 clean = clean_frame(frame, missing_tokens)
-file_digest = hashlib.sha256(payload + repr((encoding, separator, missing_tokens)).encode()).hexdigest()[:16]
+file_digest = hashlib.sha256(payload + repr((encoding, separator, missing_tokens, incoming_plan)).encode()).hexdigest()[:16]
 st.caption(f"目前檔案：{filename} · 編碼：{file_info['encoding']}")
 cards = st.columns(4)
 cards[0].metric("資料筆數", f"{len(frame):,}")
@@ -84,7 +85,8 @@ cards[2].metric("缺值儲存格", f"{int(clean.isna().sum().sum()):,}")
 cards[3].metric("完全重複列", int(clean.duplicated().sum()))
 
 training_mode = st.radio("訓練模式", ["一般表格｜分類／回歸", "時間序列｜預測未來數值"],
-                         index=1 if sample and "時間序列" in sample else 0, horizontal=True, key=f"mode_{file_digest}")
+                         index=1 if (sample and "時間序列" in sample) or incoming_plan.get("task") == "time_series" else 0,
+                         horizontal=True, key=f"mode_{file_digest}")
 if os.environ.get("CSV_STUDIO_LOCAL") == "1":
     from chatgpt_panel import render_chatgpt_panel
     render_chatgpt_panel()
@@ -108,18 +110,18 @@ with tab_overview:
 
 if training_mode.startswith("時間序列"):
     from forecast_ui import render_forecast_ui
-    render_forecast_ui(frame, file_digest, missing_tokens, tab_prepare, tab_output)
+    render_forecast_ui(frame, file_digest, missing_tokens, tab_prepare, tab_output, initial_options=incoming_plan)
     st.stop()
 
 with tab_prepare:
     st.subheader("先告訴我：你要預測什麼？")
-    default_target = SAMPLES[sample][1] if sample else None
+    default_target = SAMPLES[sample][1] if sample else incoming_plan.get("target")
     options = ["（請選擇目標欄位）"] + list(frame.columns)
     target_index = options.index(default_target) if default_target in options else 0
     left, right = st.columns(2)
     target = left.selectbox("目標欄位 y", options, index=target_index, key=f"target_{file_digest}")
     task_label = right.selectbox("任務類型", ["分類｜預測類別", "回歸｜預測數值"],
-                                 index=1 if sample and "回歸" in sample else 0, key=f"task_{file_digest}")
+                                 index=1 if (sample and "回歸" in sample) or incoming_plan.get("task") == "regression" else 0, key=f"task_{file_digest}")
     task = "classification" if task_label.startswith("分類") else "regression"
     model_label = st.selectbox("模型選擇", ["基準模型", "Random Forest", "AutoML｜比較後選擇"], key=f"model_{file_digest}")
     model_choice = {"基準模型": "baseline", "Random Forest": "random_forest", "AutoML｜比較後選擇": "auto"}[model_label]

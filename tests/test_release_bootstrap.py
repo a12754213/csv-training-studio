@@ -37,6 +37,23 @@ assert preprocessing.PrepConfig is training_type
                                 capture_output=True, text=True, timeout=30)
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_entrypoint_refreshes_the_cached_bootstrap_itself(self):
+        script = r'''
+import release_bootstrap, version
+from streamlit.testing.v1 import AppTest
+release_bootstrap._MODULES = ("version",)
+release_bootstrap._source_signature = "previous-release"
+version.__version__ = "3.2.1"
+app = AppTest.from_file("app.py", default_timeout=30).run()
+assert not app.exception
+assert "agent_workspace" in release_bootstrap._MODULES
+assert "agent_modules.document_media" in release_bootstrap._MODULES
+assert version.__version__ == release_bootstrap.current_source_version()
+'''
+        result = subprocess.run([sys.executable, '-c', script], cwd=ROOT,
+                                capture_output=True, text=True, timeout=45)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_current_release_does_not_reload_during_each_widget_rerun(self):
         ensure_current_release()
         with patch("release_bootstrap.importlib.reload") as reload:
