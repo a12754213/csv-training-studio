@@ -12,13 +12,18 @@ from pathlib import Path
 import sys
 import threading
 
-_LOCK = threading.RLock()
+_LOCK = globals().get("_LOCK", threading.RLock())
 _MODULES = (
     "version",
+    "agent_modules.web_crawler",
+    "agent_modules.document_media",
     "agent_modules.market_tools",
     "agent_modules.research_tools",
     "agent_modules",
     "agent_supervisor",
+    "agent_llm",
+    "agent_workspace",
+    "conversation_ui",
     "ui_layout",
 )
 

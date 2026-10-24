@@ -162,6 +162,32 @@ def test_chat_without_api(page, url):
     print("PASS: AI Chat displays safe API-key requirement, no billing or training", flush=True)
 
 
+def test_conversation(page, base):
+    app = open_page(page, base, HEADING)
+    app.get_by_text('對話與多來源 Agent', exact=True).click()
+    app.get_by_role('heading', name='對話與多來源工作區', exact=True).wait_for(timeout=30000)
+    app.locator('[data-testid="stFileUploader"] input[type="file"]').set_input_files([
+        str(ROOT / 'samples/demo_churn.csv'), str(ROOT / 'samples/demo_housing.csv')])
+    app.get_by_role('textbox', name='這次要完成的目標', exact=True).fill('整理兩份資料的概況')
+    app.get_by_role('button', name='開始任務', exact=True).click()
+    app.get_by_text('目前工作區共有 2 個可用來源', exact=False).first.wait_for(timeout=30000)
+    assert_clean(app, 'conversation initial collection')
+    print('PASS: two CSV files collected into one workspace', flush=True)
+    chat = app.get_by_test_id('stChatInput').locator('textarea')
+    chat.fill('接著查看兩份資料的欄位')
+    chat.press('Enter')
+    app.get_by_text('接著查看兩份資料的欄位', exact=True).wait_for(timeout=30000)
+    app.get_by_text('目前工作區共有 2 個可用來源', exact=False).last.wait_for(timeout=30000)
+    assert_clean(app, 'conversation follow-up')
+    print('PASS: follow-up preserves two existing sources', flush=True)
+    app.get_by_role('tab', name='資料與訓練', exact=True).click()
+    app.get_by_role('button', name='接續 CSV 訓練', exact=True).click()
+    app = app_frame(page, '📊 CSV / AutoML 訓練工作區')
+    app.get_by_text('使用 AI 任務資料', exact=True).wait_for(timeout=30000)
+    assert_clean(app, 'conversation dataset handoff')
+    print('PASS: chosen conversation dataset handed to CSV training', flush=True)
+
+
 def run_suite(base):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -174,6 +200,7 @@ def run_suite(base):
                 test_uploaded_csv(page, base)
                 test_agent(page, base, artifacts)
                 test_chat_without_api(page, base)
+                test_conversation(page, base)
             print(f"PASS: Full end-to-end browser acceptance v{__version__} at {base}", flush=True)
         finally:
             context.close()

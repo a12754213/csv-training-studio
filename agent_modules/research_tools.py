@@ -113,6 +113,7 @@ def research_selected(context: AgentContext, params: dict) -> dict:
                            "text_preview": doc["text"][:1800],
                            "rows": doc["rows"], "columns": doc["columns"],
                            "retrieved_at": datetime.now(timezone.utc).isoformat(),
+                           "published_at": doc.get("published_at", ""),
                            "status": "completed"}
             if doc.get("csv_bytes"):
                 from preprocessing import read_csv_bytes, numeric_summary

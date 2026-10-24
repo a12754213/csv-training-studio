@@ -178,6 +178,8 @@ def subtitles_inspect(ctx: AgentContext, params: dict) -> dict:
 
 
 def register(registry: AgentRegistry) -> None:
+    registry.register(Capability("document.web_pdf", "讀取已選擇的公開 PDF（1.5 MB 以內）",
+                                 public_pdf, requires_approval=True))
     registry.register(Capability("document.pdf", "擷取 PDF 文字與頁數", pdf_inspect))
     registry.register(Capability("image.inspect", "圖片格式、大小與尺寸", image_inspect))
     registry.register(Capability("image.describe", "OpenAI 視覺理解（須核准外傳圖片）",
@@ -187,3 +189,19 @@ def register(registry: AgentRegistry) -> None:
                                  audio_transcribe, requires_approval=True))
     registry.register(Capability("video.subtitles", "整理上傳的 SRT/VTT 字幕",
                                  subtitles_inspect))
+
+
+def public_pdf(ctx: AgentContext, params: dict) -> dict:
+    if set(params) != {'url'}:
+        raise DocumentError('公開 PDF 只接受 url。')
+    from agent_modules.web_crawler import _destination, _robots_allowed, _get
+    url = params['url']
+    _destination(url)
+    if not _robots_allowed(url):
+        raise DocumentError('此來源不允許擷取。')
+    final, data, mime, status = _get(url, check_policy=_robots_allowed)
+    if status != 200 or not data.startswith(b'%PDF-'):
+        raise DocumentError('此網址未提供可讀取的 PDF。')
+    result = pdf_inspect(AgentContext(data, 'public.pdf'), {})
+    result['url'] = final
+    return result

@@ -1,8 +1,16 @@
-# AI Agent Hub · 多功能智慧工作台 v3.2.1
+# AI Agent Hub · 多功能智慧工作台 v3.3.0
 
 用自然語言提出任務，讓獨立工具組合完成搜尋、公開網頁擷取、檔案分析及台股趨勢研究，再接續原有 CSV／AutoML 訓練。
 
 **[開始使用與需要補充的設定](docs/QUICKSTART_AGENT.md)** · [線上網站](https://csv-training-studio-nz7xft3au8v8d6pcrjrnkd.streamlit.app/)
+
+## v3.3 對話與多來源 Agent
+
+首頁選「對話與多來源 Agent」，可一次加入六份檔案／多個公開網址，接續追問並把選定資料帶入 CSV 訓練。勾選 AI 自主規劃、提供自己的 OpenAI Key 後，模型依實際工具結果選擇下一步；可換來源、提問或產生引用實際來源的報告。每輪最多八步，搜尋另需 Brave Key。
+
+無 Key 時可先整理來源；附檔內文須另外允許才交給模型。新增來源日期、Markdown／JSON 匯出、網路查詢開關與本次任務狀態。真實付費金鑰尚未驗收，動態頁面／YouTube 沿用環境需求。
+
+[使用與限制](docs/CONVERSATIONAL_AGENT.md)
 
 ## 統一操作入口
 

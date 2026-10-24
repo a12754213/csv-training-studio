@@ -113,13 +113,14 @@ if training_mode.startswith("時間序列"):
 
 with tab_prepare:
     st.subheader("先告訴我：你要預測什麼？")
-    default_target = SAMPLES[sample][1] if sample else None
+    incoming_plan = incoming.get("plan", {}) if incoming and source == "使用 AI 任務資料" else {}
+    default_target = SAMPLES[sample][1] if sample else incoming_plan.get("target")
     options = ["（請選擇目標欄位）"] + list(frame.columns)
     target_index = options.index(default_target) if default_target in options else 0
     left, right = st.columns(2)
     target = left.selectbox("目標欄位 y", options, index=target_index, key=f"target_{file_digest}")
     task_label = right.selectbox("任務類型", ["分類｜預測類別", "回歸｜預測數值"],
-                                 index=1 if sample and "回歸" in sample else 0, key=f"task_{file_digest}")
+                                 index=1 if (sample and "回歸" in sample) or incoming_plan.get("task") == "regression" else 0, key=f"task_{file_digest}")
     task = "classification" if task_label.startswith("分類") else "regression"
     model_label = st.selectbox("模型選擇", ["基準模型", "Random Forest", "AutoML｜比較後選擇"], key=f"model_{file_digest}")
     model_choice = {"基準模型": "baseline", "Random Forest": "random_forest", "AutoML｜比較後選擇": "auto"}[model_label]

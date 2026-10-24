@@ -144,6 +144,7 @@ class _Extractor(HTMLParser):
         self.skip = 0
         self.title_depth = 0
         self.title = ""
+        self.published_at = ""
         self.block = None
         self.blocks: list[str] = []
         self.tables: list[list[tuple[list[str], bool]]] = []
@@ -157,6 +158,11 @@ class _Extractor(HTMLParser):
             self.skip += 1
         if self.skip:
             return
+        if tag == "meta":
+            metadata = dict(attrs)
+            label = (metadata.get("property") or metadata.get("name") or "").lower()
+            if label in ("article:published_time", "datepublished", "pubdate"):
+                self.published_at = str(metadata.get("content") or "")[:80]
         if tag == "title":
             self.title_depth += 1
         if tag in ("p", "h1", "h2", "h3", "li") and self.block is None:
@@ -267,7 +273,8 @@ def crawl(context: AgentContext, params: dict) -> dict:
     text = "\n".join(parser.blocks)[:MAX_CHARS]
     return dict(url=final_url, kind="table" if data else "text",
                 title=" ".join(parser.title.split())[:300], text=text,
-                csv_bytes=data, rows=rows, columns=columns, tables=len(parser.tables))
+                csv_bytes=data, rows=rows, columns=columns, tables=len(parser.tables),
+                published_at=parser.published_at)
 
 
 def register(registry: AgentRegistry) -> None:
